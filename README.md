@@ -8,4 +8,4 @@ Page statique (HTML + CSS), servie par nginx sur le VPS depuis `/var/www/marinea
 
 ## À compléter
 
-Chercher les `[...]` dans `index.html` : lien de l'appli Niki Coach, lien de prise de RDV, LinkedIn, photo, et deux phrases dans « À propos ».
+Chercher les `[...]` dans `index.html` : lien de l'appli Niki Coach, lien de prise de RDV, LinkedIn, et deux phrases dans « À propos ».
