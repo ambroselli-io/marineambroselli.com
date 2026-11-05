@@ -1,11 +1,10 @@
 # marineambroselli.com
 
-Page statique (HTML + CSS), déployée par GitHub Pages sur https://marineambroselli.com via `.github/workflows/pages.yml` à chaque push sur `main`.
+Page statique (HTML + CSS), servie par nginx sur le VPS depuis `/var/www/marineambroselli.com`. À chaque push sur `main`, `.github/workflows/deploy.yml` se connecte en SSH et fait un `git reset --hard origin/main` sur le serveur.
 
 - `index.html` : contenu de la page
 - `style.css` : styles
 - `assets/` : images (photo de profil, etc.)
-- `CNAME` : domaine personnalisé
 
 ## À compléter
 
