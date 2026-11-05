@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: deployer
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          set -e
+          cd /var/www/marineambroselli.com
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Site statique servi directement par nginx : pas de build, pas de pm2
+          if curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/; then
+            echo "Site is up."
+          else
+            echo "Site is not responding."
+            exit 1
+          fi
