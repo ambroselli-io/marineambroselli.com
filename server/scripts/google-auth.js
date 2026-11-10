@@ -5,7 +5,7 @@
 //      de type « Application de bureau ».
 //   2. GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... npm run google-auth
 //   3. Ouvrir le lien affiché, se connecter avec le compte Google de Marine, accepter.
-//   4. Copier la ligne GOOGLE_REFRESH_TOKEN=... dans /var/www/marineambroselli-rdv/.env sur le serveur.
+//   4. Copier la ligne GOOGLE_REFRESH_TOKEN=... dans server/.env sur le serveur.
 import http from 'node:http';
 import '../src/env.js';
 

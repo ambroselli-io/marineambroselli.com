@@ -4,8 +4,7 @@ module.exports = {
       name: 'marineambroselli-rdv',
       cwd: __dirname,
       script: 'src/index.js',
-      // .env et base SQLite : à côté du site, mais hors du dossier servi par nginx
-      env: { NODE_ENV: 'production', RDV_HOME: '/var/www/marineambroselli-rdv' },
+      env: { NODE_ENV: 'production' },
       max_memory_restart: '200M',
     },
   ],

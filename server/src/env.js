@@ -1,10 +1,10 @@
-// Charge ~/marineambroselli-rdv/.env s'il existe (sans dépendance). Les variables déjà définies gagnent.
-// Volontairement HORS du dossier du site : nginx sert /var/www/marineambroselli.com tel quel.
+// Charge server/.env s'il existe (sans dépendance). Les variables déjà définies gagnent.
+// nginx ne sert que site/, donc server/.env et server/data/ ne sont jamais exposés.
 import { readFileSync, existsSync } from 'node:fs';
-import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-export const rdvHome = process.env.RDV_HOME || path.join(os.homedir(), 'marineambroselli-rdv');
+export const rdvHome = process.env.RDV_HOME || path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const envPath = path.join(rdvHome, '.env');
 if (existsSync(envPath)) {
   for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {

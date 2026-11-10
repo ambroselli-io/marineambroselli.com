@@ -106,7 +106,7 @@ app.get(
 
 // En local uniquement (SERVE_STATIC=1) : sert aussi le site statique. En prod, c'est nginx.
 if (process.env.SERVE_STATIC) {
-  const root = new URL('../../', import.meta.url).pathname;
+  const root = new URL('../../site/', import.meta.url).pathname;
   app.use(express.static(root, { extensions: ['html'], dotfiles: 'ignore' }));
 }
 

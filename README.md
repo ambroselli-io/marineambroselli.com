@@ -1,16 +1,17 @@
 # marineambroselli.com
 
-Page statique (HTML + CSS) servie par nginx sur le VPS depuis `/var/www/marineambroselli.com`, plus une petite API Node pour la prise de rendez-vous (remplace cal.com). À chaque push sur `main`, `.github/workflows/deploy.yml` se connecte en SSH, fait un `git reset --hard origin/main`, installe les dépendances de `server/` et relance l'API avec pm2.
+Monorepo cloné dans `/var/www/marineambroselli.com` sur le VPS. À chaque push sur `main`, `.github/workflows/deploy.yml` se connecte en SSH, fait un `git reset --hard origin/main`, installe les dépendances de `server/` et relance l'API avec pm2.
 
-- `index.html`, `style.css`, `assets/` : la page d'accueil
-- `rdv/` : pages de réservation (`/rdv/`) et de gestion d'un rdv (`/rdv/gerer.html?id=…&t=…`), HTML/JS vanilla sans build
-- `server/` : API Express + SQLite (`/api/…`)
+- `site/` : le site statique, **seul dossier servi par nginx** (`root /var/www/marineambroselli.com/site`)
+  - `index.html`, `style.css`, `assets/` : la page d'accueil
+  - `rdv/` : pages de réservation (`/rdv/`) et de gestion d'un rdv (`/rdv/gerer.html?id=…&t=…`), HTML/JS vanilla sans build
+- `server/` : API Express + SQLite (`/api/…`, proxifiée par nginx vers pm2). Son `.env` et sa base `data/` restent sur le serveur, ignorés par git.
 
 ## Prise de rendez-vous
 
 Parcours copié de cal.com/marine.ambroselli : choix du type (consultation 90 min ou rdv 30 min), du jour, de l'heure, puis nom / email / téléphone / formule / motif. À la réservation :
 
-1. le rdv est enregistré en base (SQLite, `/var/www/marineambroselli-rdv/data/rdv.sqlite`), avec un verrou contre les doubles réservations ;
+1. le rdv est enregistré en base (SQLite, `server/data/rdv.sqlite`), avec un verrou contre les doubles réservations ;
 2. il est ajouté à l'agenda de Marine (`CALENDAR_PROVIDER`) ; ses créneaux déjà occupés dans cet agenda ne sont pas proposés ;
 3. un mail part (Tipimail) à la personne et à Marine, avec le lien visio, un lien pour modifier/annuler et un `.ics` (invitation) en pièce jointe.
 
@@ -29,27 +30,26 @@ Les types de rdv, horaires d'ouverture, préavis minimum (2 h) et horizon (60 jo
 ### Mise en place sur le serveur (une fois)
 
 ```sh
-mkdir -p /var/www/marineambroselli-rdv
-cp /var/www/marineambroselli.com/server/.env.example /var/www/marineambroselli-rdv/.env   # puis remplir les clés
 cd /var/www/marineambroselli.com/server
+cp .env.example .env && chmod 600 .env   # puis remplir les clés
 npm ci --omit=dev
 pm2 start ecosystem.config.cjs && pm2 save
 ```
 
-Node ≥ 20 et pm2 doivent être installés. Ajouter dans le `server {}` nginx de marineambroselli.com :
+Node ≥ 20 et pm2 doivent être installés. Dans le `server {}` nginx de marineambroselli.com, **en même temps que le merge** (le site a déménagé dans `site/`) :
 
 ```nginx
+root /var/www/marineambroselli.com/site;
+
 location /api/ {
     proxy_pass http://127.0.0.1:3210;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
-# Le repo est servi tel quel : ne pas exposer le code serveur ni .git
-location ~ ^/(server|\.git|\.github)(/|$) { return 404; }
 ```
 
-Les secrets et la base sont dans `/var/www/marineambroselli-rdv/` (à côté du site, mais hors du dossier servi par nginx et hors git ; `RDV_HOME` dans `server/ecosystem.config.cjs`). En local, par défaut : `~/marineambroselli-rdv/`. Penser à sauvegarder `/var/www/marineambroselli-rdv/data/rdv.sqlite`.
+Comme nginx ne sert que `site/`, ni `server/.env`, ni `server/data/`, ni `.git` ne sont accessibles. Le `git reset --hard` du déploiement ne touche pas aux fichiers ignorés. Penser à sauvegarder `server/data/rdv.sqlite`.
 
 ### En local
 
@@ -63,4 +63,4 @@ Sans clés Tipimail, les mails ne partent pas ; avec `MAIL_DUMP_DIR` ils sont é
 
 ## À compléter
 
-Chercher les `[...]` dans `index.html` : lien de l'appli Niki Coach, LinkedIn, et deux phrases dans « À propos ».
+Chercher les `[...]` dans `site/index.html` : lien de l'appli Niki Coach, LinkedIn, et deux phrases dans « À propos ».
