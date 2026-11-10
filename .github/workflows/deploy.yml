@@ -3,6 +3,8 @@ name: Deploy
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - "*.md"
   workflow_dispatch:
 
 concurrency:
@@ -10,35 +12,91 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Tests de l'API de rdv (node --test, < 1 s, sans réseau). Ne bloque pas le déploiement :
+  # sert à voir quand c'est rouge.
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+      - name: Run tests
+        working-directory: server
+        run: npm test
+
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: deployer
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          set -e
-          # pm2/npm installés dans ~/.npm-global, absent du PATH en SSH non interactif
-          export PATH="$HOME/.npm-global/bin:$PATH"
-          cd /var/www/marineambroselli.com
-          git fetch origin main
-          git reset --hard origin/main
+      # Le SSH du VPS n'est ouvert que sur Tailscale
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
 
-          # API de prise de rdv (server/) : dépendances + redémarrage pm2
-          cd server
-          npm ci --omit=dev
-          pm2 startOrReload ecosystem.config.cjs --update-env
-          pm2 save
-          cd ..
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: deployer
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            export PATH="$HOME/.npm-global/bin:$PATH"
+            pm2 --version
 
-          sleep 2
-          if curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/ \
-            && curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/api/health; then
-            echo "Site and API are up."
-          else
-            echo "Site or API is not responding."
-            exit 1
+            cd /var/www/marineambroselli.com
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Site statique (site/) : servi directement par nginx, rien à faire.
+            # API de prise de rdv (server/) : dépendances + redémarrage pm2
+            cd server
+            npm ci --omit=dev
+            pm2 startOrReload ecosystem.config.cjs --update-env
+            pm2 save
+
+            sleep 3
+            if curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/ \
+              && curl -fsS --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/api/health; then
+              echo
+              echo "Site and API are up."
+            else
+              echo "Site or API is not responding."
+              exit 1
+            fi
+
+  notify:
+    needs: [ tests, deploy ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DEPLOY: ${{ needs.deploy.result }}
+          TESTS: ${{ needs.tests.result }}
+          REF: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL secret is not set; skipping notification."
+            exit 0
           fi
+          if [ "$DEPLOY" = "success" ] && [ "$TESTS" = "success" ]; then
+            icon=":white_check_mark:"; msg="déployé"
+          elif [ "$DEPLOY" = "success" ]; then
+            icon=":warning:"; msg="déployé, mais les tests de l'API rdv sont rouges"
+          else
+            icon=":x:"; msg="déploiement en échec ($DEPLOY)"
+          fi
+          PAYLOAD=$(jq -nc --arg text "$icon *marineambroselli.com* $msg (commit \`${SHA:0:7}\` par $ACTOR sur \`$REF\`)
+          <$RUN_URL|Voir le run>" '{text: $text}')
+          curl -sS -X POST -H 'Content-Type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
