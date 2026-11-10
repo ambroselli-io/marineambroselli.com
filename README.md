@@ -16,12 +16,14 @@ Parcours copié de cal.com/marine.ambroselli : choix du type (consultation 90 mi
 
 Chacun a son propre lien de gestion (jeton différent pour Marine et pour la personne). Déplacer ou annuler met à jour l'agenda et renvoie un mail aux deux (avec un `.ics` de mise à jour ou d'annulation).
 
+Visio : salle Jitsi fixe `https://meet.jit.si/marineambroselli` (`VIDEO_URL_TEMPLATE`). Fuseaux : les horaires de Marine sont en heure de Grèce (`HOST_TIMEZONE=Europe/Athens`, lun–ven 9h–17h), les clientes voient l'heure de Paris par défaut (modifiable sur la page), Marine reçoit ses mails en heure de Grèce.
+
 Les types de rdv, horaires d'ouverture, préavis minimum (2 h) et horizon (60 jours) sont dans `server/src/config.js` (surchargeables par variables d'environnement).
 
 ### Agenda de Marine
 
-- `google` : Google Agenda via OAuth. Crée l'événement avec un lien **Google Meet** (comme cal.com). Obtenir le refresh token une fois avec `npm run google-auth` (instructions dans `server/scripts/google-auth.js`).
-- `caldav` : Calendrier Apple / iCloud (ou tout serveur CalDAV). Identifiant Apple + **mot de passe pour app** (appleid.apple.com → Connexion et sécurité → Mots de passe pour app). Le lien visio vient alors de `VIDEO_URL_TEMPLATE` (Jitsi par défaut).
+- `google` : Google Agenda via OAuth (`GOOGLE_MEET=1` pour un lien Google Meet par rdv au lieu de la salle Jitsi). Obtenir le refresh token une fois avec `npm run google-auth` (instructions dans `server/scripts/google-auth.js`).
+- `caldav` : Calendrier Apple / iCloud (ou tout serveur CalDAV). Identifiant Apple + **mot de passe pour app** (appleid.apple.com → Connexion et sécurité → Mots de passe pour app). 
 - `none` : rien n'est synchronisé, Marine reçoit le `.ics` dans son mail.
 
 ### Mise en place sur le serveur (une fois)

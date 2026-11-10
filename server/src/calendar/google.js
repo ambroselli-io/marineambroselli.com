@@ -84,6 +84,10 @@ function eventBody(d) {
 }
 
 export async function create(booking, d) {
+  if (!config.googleMeet) {
+    const ev = await api('POST', `${cal()}/events?sendUpdates=none`, { ...eventBody(d), location: d.videoUrl });
+    return { ref: ev.id };
+  }
   const ev = await api('POST', `${cal()}/events?conferenceDataVersion=1&sendUpdates=none`, {
     ...eventBody(d),
     conferenceData: {

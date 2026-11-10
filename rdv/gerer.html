@@ -40,7 +40,7 @@
     view.innerHTML = '';
     children.forEach(function (c) { if (c) view.appendChild(c); });
   }
-  function zone() { return b.role === 'host' ? b.hostTimeZone : RDV.guessZone(); }
+  function zone() { return b.role === 'host' ? b.hostTimeZone : b.timeZone; }
   function errorBox() { return el('p', { class: 'error', hidden: true, role: 'alert' }); }
 
   function summary(notice) {

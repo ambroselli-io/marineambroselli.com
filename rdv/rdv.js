@@ -52,7 +52,7 @@
   function ymd(y, m, d) { var t = new Date(Date.UTC(y, m, d)); return t.getUTCFullYear() + '-' + pad(t.getUTCMonth() + 1) + '-' + pad(t.getUTCDate()); }
 
   RDV.zoneLabel = function (zone) {
-    return zone === 'Europe/Paris' ? 'Heure de Paris' : zone.replace(/_/g, ' ');
+    return { 'Europe/Paris': 'Heure de Paris', 'Europe/Athens': 'Heure de Grèce' }[zone] || zone.replace(/_/g, ' ');
   };
 
   /**
@@ -60,7 +60,7 @@
    * opts = { type, zone, onPick(iso, zone), extraQuery }
    */
   RDV.picker = function (root, opts) {
-    var zone = opts.zone || RDV.guessZone();
+    var zone = opts.zone || 'Europe/Paris';
     var today = dayKey(new Date().toISOString(), zone).split('-').map(Number);
     var cur = { y: today[0], m: today[1] - 1 };
     var first = { y: cur.y, m: cur.m };

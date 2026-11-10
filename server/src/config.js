@@ -12,8 +12,9 @@ export const config = {
     name: env.HOST_NAME || 'Marine Ambroselli',
     email: env.HOST_EMAIL || 'marine@example.com',
     phone: env.HOST_PHONE || 'XX XX XX XX XX',
-    // Fuseau dans lequel sont exprimées les heures de travail ci-dessous.
-    timeZone: env.HOST_TIMEZONE || 'Europe/Paris',
+    // Marine habite en Grèce : ses heures de travail ci-dessous sont en heure d'Athènes.
+    // Les clientes, elles, voient les horaires en heure de Paris par défaut.
+    timeZone: env.HOST_TIMEZONE || 'Europe/Athens',
   },
 
   mail: {
@@ -39,9 +40,10 @@ export const config = {
     calendarName: env.CALDAV_CALENDAR_NAME || '', // vide = premier calendrier
   },
 
-  // Lien visio quand l'agenda ne fournit pas de Google Meet.
-  // Peut contenir {id} (remplacé par un identifiant unique du rdv). Défaut : Jitsi Meet.
-  videoUrlTemplate: env.VIDEO_URL_TEMPLATE || 'https://meet.jit.si/MarineAmbroselli-{id}',
+  // Lien visio. Salle Jitsi fixe de Marine par défaut. Peut contenir {id} (identifiant unique du rdv).
+  videoUrlTemplate: env.VIDEO_URL_TEMPLATE || 'https://meet.jit.si/marineambroselli',
+  // Avec CALENDAR_PROVIDER=google, GOOGLE_MEET=1 remplace ce lien par un Google Meet par rdv.
+  googleMeet: env.GOOGLE_MEET === '1',
 
   booking: {
     minNoticeMinutes: Number(env.MIN_NOTICE_MINUTES || 120),

@@ -11,7 +11,7 @@ export const manageUrl = (b, role) =>
 export function formatWhen(b, zone) {
   const s = DateTime.fromISO(b.start_utc, { zone }).setLocale('fr');
   const e = DateTime.fromISO(b.end_utc, { zone }).setLocale('fr');
-  const label = zone === 'Europe/Paris' ? 'heure de Paris' : zone.replace(/_/g, ' ');
+  const label = { 'Europe/Paris': 'heure de Paris', 'Europe/Athens': 'heure de Grèce' }[zone] || zone.replace(/_/g, ' ');
   return `${s.toFormat("cccc d LLLL yyyy 'de' HH'h'mm")} à ${e.toFormat("HH'h'mm")} (${label})`;
 }
 
