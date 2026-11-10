@@ -21,6 +21,8 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           set -e
+          # pm2/npm installés dans ~/.npm-global, absent du PATH en SSH non interactif
+          export PATH="$HOME/.npm-global/bin:$PATH"
           cd /var/www/marineambroselli.com
           git fetch origin main
           git reset --hard origin/main
