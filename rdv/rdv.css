@@ -1,0 +1,61 @@
+/* Prise de rendez-vous : complète ../style.css */
+.back { align-self: flex-start; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; padding: 10px 0; background: none; border: 0; color: var(--text); font-family: inherit; cursor: pointer; }
+.head { display: flex; flex-direction: column; gap: 10px; text-align: center; align-items: center; }
+.head h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; color: var(--text-strong); }
+.head p { margin: 0; }
+.meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.types { display: flex; flex-direction: column; gap: 12px; }
+.type { text-align: left; font: inherit; color: inherit; background: none; cursor: pointer; }
+.type .link__text span:last-child { text-transform: none; }
+
+.desc { display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.6; }
+.desc p { margin: 0; }
+
+/* Calendrier */
+.cal { display: flex; flex-direction: column; gap: 12px; }
+.cal__head { display: flex; align-items: center; justify-content: space-between; }
+.cal__title { font-family: var(--serif); font-size: 20px; }
+.cal__nav { display: flex; gap: 6px; }
+.cal__nav button { width: 44px; height: 44px; border: 1.5px solid var(--text); background: none; color: var(--text); font-size: 18px; cursor: pointer; }
+.cal__nav button:disabled { opacity: 0.25; cursor: default; }
+.cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal__dow { text-align: center; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 4px 0; }
+.cal__day { aspect-ratio: 1; border: 0; background: none; font: inherit; font-size: 15px; color: var(--muted); opacity: 0.45; }
+.cal__day--open { background: var(--soft); color: var(--text-strong); opacity: 1; cursor: pointer; font-weight: 500; }
+.cal__day--open:hover { background: var(--accent); }
+.cal__day--selected, .cal__day--selected:hover { background: var(--text); color: var(--bg); }
+.cal__empty { font-size: 15px; color: var(--muted); }
+
+.tz { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.tz select { font: inherit; color: var(--text); background: var(--bg); border: 1.5px solid var(--soft); padding: 6px; max-width: 100%; }
+
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.slot { min-height: 48px; border: 1.5px solid var(--text); background: none; color: var(--text); font: inherit; font-size: 16px; font-weight: 500; cursor: pointer; }
+.slot:hover { background: var(--accent); border-color: var(--accent); }
+.slots__title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 20px; }
+.slots__title::first-letter, .cal__title::first-letter { text-transform: uppercase; }
+
+/* Formulaire */
+.form { display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; letter-spacing: 0.06em; }
+.field input, .field textarea, .field select { font: inherit; font-size: 16px; color: var(--text-strong); background: #fff; border: 1.5px solid var(--text); padding: 12px; border-radius: 0; }
+.field textarea { min-height: 96px; resize: vertical; }
+.radio { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; letter-spacing: 0; line-height: 1.45; padding: 6px 0; }
+.radio input { margin-top: 4px; accent-color: var(--text); }
+.hp { position: absolute; left: -9999px; }
+.btn { border: 0; cursor: pointer; font-family: inherit; }
+.btn--outline { border: 1.5px solid var(--text); background: none; color: var(--text); }
+.btn:disabled { opacity: 0.5; cursor: wait; }
+.error { margin: 0; padding: 12px 14px; background: #fbe9e6; color: #8a2b1d; font-size: 15px; }
+.summary { padding: 14px 16px; background: var(--soft); font-size: 15px; line-height: 1.6; }
+.summary strong { color: var(--text-strong); font-weight: 500; }
+.ok { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+.small { font-size: 14px; color: var(--muted); line-height: 1.5; margin: 0; }
+.loading { color: var(--muted); font-size: 15px; }
+.stack { display: flex; flex-direction: column; gap: 20px; }
+
+@media (max-width: 480px) {
+  .head h1 { font-size: 26px; }
+  .cal__day { font-size: 14px; }
+}

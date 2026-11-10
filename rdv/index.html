@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prendre rendez-vous · Marine Ambroselli</title>
+<meta name="description" content="Réservez une consultation de naturopathie ou un échange en visio avec Marine Ambroselli.">
+<meta name="theme-color" content="#FFFDF8">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="/style.css?v=2">
+<link rel="stylesheet" href="/rdv/rdv.css?v=1">
+</head>
+<body>
+<main class="page">
+<div class="card" id="app">
+<header class="head">
+<a href="/"><img class="avatar" src="/assets/marine.jpg" alt="Marine Ambroselli" width="96" height="96"></a>
+<p class="hero__role">Marine Ambroselli</p>
+<h1>Prendre rendez-vous</h1>
+</header>
+<div id="view" class="stack"><p class="loading">Chargement…</p></div>
+<footer class="footer"><a href="/">marineambroselli.com</a></footer>
+</div>
+</main>
+<script src="/rdv/rdv.js?v=1"></script>
+<script>
+(function () {
+  var el = RDV.el;
+  var view = document.getElementById('view');
+  var state = { types: [], type: null, start: null, zone: RDV.guessZone() };
+
+  function show(children) {
+    view.innerHTML = '';
+    children.forEach(function (c) { if (c) view.appendChild(c); });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function back(label, fn) { return el('button', { type: 'button', class: 'back', onclick: fn, text: '← ' + label }); }
+  function meta(type) {
+    return el('div', { class: 'meta' }, [el('span', { text: type.duration + ' min' }), el('span', { text: 'En visio' })]);
+  }
+
+  function chooseType() {
+    state.type = null;
+    show([
+      el('div', { class: 'types' }, state.types.map(function (t) {
+        return el('button', { type: 'button', class: 'link type', onclick: function () { pickTime(t); } }, [
+          el('span', { class: 'link__text' }, [el('span', { class: 'link__title', text: t.title }), el('span', { text: t.subtitle || t.duration + ' min' })]),
+          el('span', { 'aria-hidden': 'true', text: '→' }),
+        ]);
+      })),
+    ]);
+  }
+
+  function pickTime(type) {
+    state.type = type;
+    history.replaceState(null, '', '?type=' + type.slug);
+    var box = el('div');
+    show([
+      state.types.length > 1 ? back('Autres rendez-vous', function () { history.replaceState(null, '', location.pathname); chooseType(); }) : null,
+      el('section', { class: 'section' }, [
+        el('h2', { text: type.title }),
+        meta(type),
+        el('div', { class: 'desc' }, type.description.map(function (p) { return el('p', { text: p }); })),
+      ]),
+      el('section', { class: 'section' }, [el('h2', { text: 'Choisissez un créneau' }), box]),
+    ]);
+    RDV.picker(box, {
+      type: type.slug,
+      zone: state.zone,
+      onPick: function (iso, zone) { state.start = iso; state.zone = zone; form(); },
+    });
+  }
+
+  function form() {
+    var t = state.type;
+    var end = new Date(new Date(state.start).getTime() + t.duration * 60000).toISOString();
+    var err = el('p', { class: 'error', hidden: true, role: 'alert' });
+    var submit = el('button', { type: 'submit', class: 'btn btn--dark', text: 'Confirmer le rendez-vous' });
+    var fields = [
+      el('label', { class: 'field' }, ['Votre nom *', el('input', { name: 'name', required: true, autocomplete: 'name' })]),
+      el('label', { class: 'field' }, ['Votre adresse email *', el('input', { name: 'email', type: 'email', required: true, autocomplete: 'email' })]),
+      el('label', { class: 'field' }, ['Téléphone (facultatif)', el('input', { name: 'phone', type: 'tel', autocomplete: 'tel' })]),
+    ];
+    if (t.options) {
+      fields.push(el('fieldset', { class: 'field', style: 'border:0;padding:0;margin:0' }, [el('legend', { text: t.options.label + ' *', style: 'padding:0;margin-bottom:6px' })].concat(
+        t.options.choices.map(function (c, i) {
+          return el('label', { class: 'radio' }, [el('input', { type: 'radio', name: 'option', value: c, required: true, checked: i === 0 }), c]);
+        }))));
+    }
+    fields.push(el('label', { class: 'field' }, ['Motif du rendez-vous, informations utiles (facultatif)', el('textarea', { name: 'notes' })]));
+    fields.push(el('input', { class: 'hp', name: 'website', tabindex: '-1', autocomplete: 'off', 'aria-hidden': 'true' }));
+    var f = el('form', { class: 'form', onsubmit: function (e) {
+      e.preventDefault();
+      err.hidden = true;
+      submit.disabled = true;
+      submit.textContent = 'Réservation en cours…';
+      var d = new FormData(f);
+      RDV.api('POST', '/api/bookings', {
+        eventType: t.slug,
+        start: state.start,
+        timeZone: state.zone,
+        name: d.get('name'),
+        email: d.get('email'),
+        phone: d.get('phone'),
+        option: d.get('option'),
+        notes: d.get('notes'),
+        website: d.get('website'),
+      }).then(done).catch(function (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+        submit.disabled = false;
+        submit.textContent = 'Confirmer le rendez-vous';
+      });
+    } }, fields.concat([err, submit]));
+
+    show([
+      back('Changer de créneau', function () { pickTime(t); }),
+      el('div', { class: 'summary' }, [el('strong', { text: t.title }), el('br'), RDV.when(state.start, end, state.zone), el('br'), el('span', { class: 'small', text: RDV.zoneLabel(state.zone) + ' · en visio' })]),
+      f,
+    ]);
+  }
+
+  function done(b) {
+    show([
+      el('div', { class: 'head' }, [
+        el('div', { class: 'ok', 'aria-hidden': 'true', text: '✓' }),
+        el('h2', { class: 'slots__title', text: 'Rendez-vous confirmé' }),
+        el('p', { text: 'Un email de confirmation vient de vous être envoyé à ' + b.email + '.' }),
+      ]),
+      el('div', { class: 'summary' }, [el('strong', { text: b.eventType.title }), el('br'), RDV.when(b.start, b.end, b.timeZone), el('br'), 'Avec ' + b.hostName]),
+      el('div', { class: 'btn-row' }, [
+        el('a', { class: 'btn btn--accent', href: '/api/bookings/' + b.id + '/ics?t=' + b.token, text: 'Ajouter à mon agenda' }),
+        el('a', { class: 'btn btn--outline', href: '/rdv/gerer.html?id=' + b.id + '&t=' + b.token, text: 'Modifier ou annuler' }),
+      ]),
+      el('p', { class: 'small', text: 'Le lien de la visio est dans l’email de confirmation.' }),
+    ]);
+  }
+
+  RDV.api('GET', '/api/event-types').then(function (res) {
+    state.types = res.eventTypes;
+    var slug = new URLSearchParams(location.search).get('type');
+    var t = state.types.filter(function (x) { return x.slug === slug; })[0];
+    if (t) pickTime(t);
+    else if (state.types.length === 1) pickTime(state.types[0]);
+    else chooseType();
+  }).catch(function (e) {
+    show([el('p', { class: 'error', text: 'La prise de rendez-vous est momentanément indisponible. Vous pouvez me joindre au XX XX XX XX XX (appel ou WhatsApp).' })]);
+  });
+})();
+</script>
+</body>
+</html>

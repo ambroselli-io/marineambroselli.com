@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mon rendez-vous · Marine Ambroselli</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFDF8">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="/style.css?v=2">
+<link rel="stylesheet" href="/rdv/rdv.css?v=1">
+</head>
+<body>
+<main class="page">
+<div class="card">
+<header class="head">
+<a href="/"><img class="avatar" src="/assets/marine.jpg" alt="Marine Ambroselli" width="96" height="96"></a>
+<p class="hero__role">Marine Ambroselli</p>
+<h1>Mon rendez-vous</h1>
+</header>
+<div id="view" class="stack"><p class="loading">Chargement…</p></div>
+<footer class="footer"><a href="/">marineambroselli.com</a></footer>
+</div>
+</main>
+<script src="/rdv/rdv.js?v=1"></script>
+<script>
+(function () {
+  var el = RDV.el;
+  var view = document.getElementById('view');
+  var params = new URLSearchParams(location.search);
+  var id = params.get('id');
+  var t = params.get('t');
+  var b = null;
+
+  function show(children) {
+    view.innerHTML = '';
+    children.forEach(function (c) { if (c) view.appendChild(c); });
+  }
+  function zone() { return b.role === 'host' ? b.hostTimeZone : RDV.guessZone(); }
+  function errorBox() { return el('p', { class: 'error', hidden: true, role: 'alert' }); }
+
+  function summary(notice) {
+    var isHost = b.role === 'host';
+    return el('div', { class: 'summary' }, [
+      notice ? el('p', { style: 'margin:0 0 8px', text: notice }) : null,
+      el('strong', { text: b.eventType.title }),
+      el('br'),
+      RDV.when(b.start, b.end, zone()),
+      el('br'),
+      el('span', { class: 'small', text: RDV.zoneLabel(zone()) }),
+      el('br'),
+      isHost ? 'Avec ' + b.name + ' · ' + b.email + (b.phone ? ' · ' + b.phone : '') : 'Avec ' + b.hostName,
+      isHost && b.option ? el('div', { text: b.option }) : null,
+      isHost && b.notes ? el('div', { text: 'Notes : ' + b.notes }) : null,
+    ]);
+  }
+
+  function main(notice) {
+    var past = new Date(b.end) < new Date();
+    if (b.status === 'cancelled') {
+      return show([
+        summary(),
+        el('p', { text: 'Ce rendez-vous a été annulé.' + (b.cancelReason ? ' Motif : ' + b.cancelReason : '') }),
+        b.role === 'attendee' ? el('a', { class: 'btn btn--dark', href: '/rdv/?type=' + b.eventType.slug, text: 'Reprendre un rendez-vous' }) : null,
+      ]);
+    }
+    show([
+      summary(notice),
+      past ? el('p', { class: 'small', text: 'Ce rendez-vous est passé.' }) : null,
+      el('div', { class: 'btn-row' }, [
+        !past ? el('a', { class: 'btn btn--dark', href: b.videoUrl, target: '_blank', rel: 'noopener', text: 'Rejoindre la visio' }) : null,
+        el('a', { class: 'btn btn--accent', href: '/api/bookings/' + b.id + '/ics?t=' + encodeURIComponent(t), text: 'Ajouter à mon agenda' }),
+      ]),
+      past && b.role !== 'host' ? null : el('div', { class: 'btn-row' }, [
+        el('button', { type: 'button', class: 'btn btn--outline', onclick: reschedule, text: 'Déplacer' }),
+        el('button', { type: 'button', class: 'btn btn--outline', onclick: cancel, text: 'Annuler' }),
+      ]),
+    ]);
+  }
+
+  function reschedule() {
+    var box = el('div');
+    show([
+      el('button', { type: 'button', class: 'back', onclick: function () { main(); }, text: '← Retour' }),
+      summary(),
+      el('section', { class: 'section' }, [el('h2', { text: 'Choisissez un nouveau créneau' }), box]),
+    ]);
+    RDV.picker(box, {
+      type: b.eventType.slug,
+      zone: zone(),
+      extraQuery: '&id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(t),
+      onPick: function (iso, z) { confirmMove(iso, z); },
+    });
+  }
+
+  function confirmMove(iso, z) {
+    var end = new Date(new Date(iso).getTime() + b.eventType.duration * 60000).toISOString();
+    var err = errorBox();
+    var btn = el('button', { type: 'button', class: 'btn btn--dark', text: 'Confirmer le nouveau créneau', onclick: function () {
+      btn.disabled = true;
+      err.hidden = true;
+      RDV.api('POST', '/api/bookings/' + id + '/reschedule', { t: t, start: iso }).then(function (res) {
+        b = res;
+        main('Le rendez-vous a bien été déplacé. Un email de confirmation a été envoyé.');
+      }).catch(function (e) { err.textContent = e.message; err.hidden = false; btn.disabled = false; });
+    } });
+    show([
+      el('button', { type: 'button', class: 'back', onclick: reschedule, text: '← Changer de créneau' }),
+      el('div', { class: 'summary' }, [
+        el('span', { class: 'small', text: 'Ancien créneau : ' + RDV.when(b.start, b.end, z) }), el('br'),
+        el('strong', { text: 'Nouveau créneau : ' }), RDV.when(iso, end, z),
+      ]),
+      err,
+      btn,
+    ]);
+  }
+
+  function cancel() {
+    var err = errorBox();
+    var reason = el('textarea', { name: 'reason' });
+    var btn = el('button', { type: 'button', class: 'btn btn--dark', text: 'Confirmer l’annulation', onclick: function () {
+      btn.disabled = true;
+      err.hidden = true;
+      RDV.api('POST', '/api/bookings/' + id + '/cancel', { t: t, reason: reason.value }).then(function (res) {
+        b = res;
+        main();
+      }).catch(function (e) { err.textContent = e.message; err.hidden = false; btn.disabled = false; });
+    } });
+    show([
+      el('button', { type: 'button', class: 'back', onclick: function () { main(); }, text: '← Ne pas annuler' }),
+      summary(),
+      el('label', { class: 'field' }, [b.role === 'host' ? 'Motif (sera envoyé à ' + b.name + ', facultatif)' : 'Motif de l’annulation (facultatif)', reason]),
+      err,
+      btn,
+    ]);
+  }
+
+  if (!id || !t) return show([el('p', { class: 'error', text: 'Lien incomplet. Utilisez le lien reçu par email.' })]);
+  RDV.api('GET', '/api/bookings/' + encodeURIComponent(id) + '?t=' + encodeURIComponent(t))
+    .then(function (res) { b = res; main(); })
+    .catch(function (e) { show([el('p', { class: 'error', text: e.message })]); });
+})();
+</script>
+</body>
+</html>
