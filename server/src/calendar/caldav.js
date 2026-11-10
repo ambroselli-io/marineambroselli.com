@@ -55,11 +55,17 @@ export async function busy(start, end) {
     .filter((b) => b.start < end.getTime() && b.end > start.getTime());
 }
 
-const uidOf = (booking) => `${booking.id}@marineambroselli.com`;
+// UID différent de celui de l'invitation envoyée à la cliente (`${id}@marineambroselli.com`) :
+// sinon iCloud confond l'événement de l'agenda de Marine et l'invitation mail quand un même compte
+// voit les deux (calendrier partagé), et un déplacement laisse des doublons.
+const uidOf = (booking) => `${booking.id}-marine@marineambroselli.com`;
+// Les rdv créés avant ce changement gardent leur ancien UID/nom de fichier.
+const isLegacy = (booking) => booking.calendar_ref === `${booking.id}@marineambroselli.com`;
+const fileOf = (booking) => (isLegacy(booking) ? `${booking.id}.ics` : `${booking.id}-marine.ics`);
 
 function ics(booking, d) {
   return buildIcs({
-    uid: uidOf(booking),
+    uid: isLegacy(booking) ? booking.calendar_ref : uidOf(booking),
     sequence: booking.sequence,
     start: d.start,
     end: d.end,
@@ -74,7 +80,7 @@ function ics(booking, d) {
 export async function create(booking, d) {
   const c = await client();
   const cal = await targetCalendar();
-  const res = await c.createCalendarObject({ calendar: cal, filename: `${booking.id}.ics`, iCalString: ics(booking, d) });
+  const res = await c.createCalendarObject({ calendar: cal, filename: fileOf(booking), iCalString: ics(booking, d) });
   if (!res.ok) throw new Error(`CalDAV create: ${res.status}`);
   return { ref: uidOf(booking) };
 }
@@ -83,7 +89,7 @@ export async function update(booking, d) {
   const c = await client();
   const cal = await targetCalendar();
   const res = await c.updateCalendarObject({
-    calendarObject: { url: new URL(`${booking.id}.ics`, cal.url).href, data: ics(booking, d) },
+    calendarObject: { url: new URL(fileOf(booking), cal.url).href, data: ics(booking, d) },
   });
   if (!res.ok) throw new Error(`CalDAV update: ${res.status}`);
 }
@@ -91,6 +97,6 @@ export async function update(booking, d) {
 export async function remove(booking) {
   const c = await client();
   const cal = await targetCalendar();
-  const res = await c.deleteCalendarObject({ calendarObject: { url: new URL(`${booking.id}.ics`, cal.url).href } });
+  const res = await c.deleteCalendarObject({ calendarObject: { url: new URL(fileOf(booking), cal.url).href } });
   if (!res.ok && res.status !== 404) throw new Error(`CalDAV delete: ${res.status}`);
 }
