@@ -10,7 +10,7 @@ Page statique (HTML + CSS) servie par nginx sur le VPS depuis `/var/www/marineam
 
 Parcours copié de cal.com/marine.ambroselli : choix du type (consultation 90 min ou rdv 30 min), du jour, de l'heure, puis nom / email / téléphone / formule / motif. À la réservation :
 
-1. le rdv est enregistré en base (SQLite, `~/marineambroselli-rdv/data/rdv.sqlite`), avec un verrou contre les doubles réservations ;
+1. le rdv est enregistré en base (SQLite, `/var/www/marineambroselli-rdv/data/rdv.sqlite`), avec un verrou contre les doubles réservations ;
 2. il est ajouté à l'agenda de Marine (`CALENDAR_PROVIDER`) ; ses créneaux déjà occupés dans cet agenda ne sont pas proposés ;
 3. un mail part (Tipimail) à la personne et à Marine, avec le lien visio, un lien pour modifier/annuler et un `.ics` (invitation) en pièce jointe.
 
@@ -29,8 +29,8 @@ Les types de rdv, horaires d'ouverture, préavis minimum (2 h) et horizon (60 jo
 ### Mise en place sur le serveur (une fois)
 
 ```sh
-mkdir -p ~/marineambroselli-rdv
-cp /var/www/marineambroselli.com/server/.env.example ~/marineambroselli-rdv/.env   # puis remplir les clés
+mkdir -p /var/www/marineambroselli-rdv
+cp /var/www/marineambroselli.com/server/.env.example /var/www/marineambroselli-rdv/.env   # puis remplir les clés
 cd /var/www/marineambroselli.com/server
 npm ci --omit=dev
 pm2 start ecosystem.config.cjs && pm2 save
@@ -49,7 +49,7 @@ location /api/ {
 location ~ ^/(server|\.git|\.github)(/|$) { return 404; }
 ```
 
-Les secrets et la base sont dans `~/marineambroselli-rdv/` de l'utilisateur `deployer` (`RDV_HOME` pour changer), hors du dossier servi par nginx et hors git. Penser à sauvegarder `~/marineambroselli-rdv/data/rdv.sqlite`.
+Les secrets et la base sont dans `/var/www/marineambroselli-rdv/` (à côté du site, mais hors du dossier servi par nginx et hors git ; `RDV_HOME` dans `server/ecosystem.config.cjs`). En local, par défaut : `~/marineambroselli-rdv/`. Penser à sauvegarder `/var/www/marineambroselli-rdv/data/rdv.sqlite`.
 
 ### En local
 
