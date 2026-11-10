@@ -21,14 +21,24 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           set -e
+          # pm2/npm installés dans ~/.npm-global, absent du PATH en SSH non interactif
+          export PATH="$HOME/.npm-global/bin:$PATH"
           cd /var/www/marineambroselli.com
           git fetch origin main
           git reset --hard origin/main
 
-          # Site statique servi directement par nginx : pas de build, pas de pm2
-          if curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/; then
-            echo "Site is up."
+          # API de prise de rdv (server/) : dépendances + redémarrage pm2
+          cd server
+          npm ci --omit=dev
+          pm2 startOrReload ecosystem.config.cjs --update-env
+          pm2 save
+          cd ..
+
+          sleep 2
+          if curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/ \
+            && curl -fsS -o /dev/null --resolve marineambroselli.com:443:127.0.0.1 https://marineambroselli.com/api/health; then
+            echo "Site and API are up."
           else
-            echo "Site is not responding."
+            echo "Site or API is not responding."
             exit 1
           fi
