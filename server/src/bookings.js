@@ -125,6 +125,14 @@ export async function cancelBooking(id, t, reason) {
   return publicView(saved, role);
 }
 
+// Marine a supprimé l'événement directement dans son agenda : on annule le rdv comme si elle l'avait fait depuis le site.
+export async function cancelDeletedFromCalendar(b) {
+  if (getBooking(b.id)?.status !== 'confirmed') return;
+  updateBooking(b.id, { status: 'cancelled', cancel_reason: null });
+  console.log(`[calendar] rdv ${b.id} (${b.name}, ${b.start_utc}) supprimé de l'agenda : annulé`);
+  await notify('cancelled', getBooking(b.id), getEventType(b.event_type), { by: 'host' });
+}
+
 export async function rescheduleBooking(id, t, start) {
   const { b, role } = authorize(id, t);
   if (b.status !== 'confirmed') throw httpError(409, 'Ce rendez-vous est annulé.');

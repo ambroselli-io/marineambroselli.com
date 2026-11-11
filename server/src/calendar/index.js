@@ -4,7 +4,8 @@ import * as caldav from './caldav.js';
 
 /**
  * Interface commune :
- *   busy(start: Date, end: Date) -> [{ start: ms, end: ms, ref?: string }]
+ *   busy(start: Date, end: Date) -> [{ start: ms, end: ms, ref?: string, free?: boolean }]
+ *     (tous les événements de la plage, y compris ceux marqués « disponible » avec free: true)
  *   create(booking, details) -> { ref, videoUrl? }
  *   update(booking, details) -> void
  *   remove(booking) -> void

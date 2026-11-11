@@ -45,13 +45,39 @@ export async function getSlots(eventType, fromDate, toDate, { excludeId = null, 
   const busy = inRange
     .filter((b) => b.id !== excludeId)
     .map((b) => ({ start: Date.parse(b.start_utc), end: Date.parse(b.end_utc) }));
-  const calBusy = await calendar.busy(rangeStart.toJSDate(), rangeEnd.toJSDate()).catch((e) => {
+  let calOk = true;
+  const calEvents = await calendar.busy(rangeStart.toJSDate(), rangeEnd.toJSDate()).catch((e) => {
     console.error('[calendar] busy failed:', e.message);
+    calOk = false;
     return [];
   });
-  // Les événements créés par ce système sont déjà comptés via la base (et celui qu'on déplace est ignoré).
-  const ourRefs = new Set(inRange.map((b) => b.calendar_ref).filter(Boolean));
-  for (const b of calBusy) if (!b.ref || !ourRefs.has(b.ref)) busy.push(b);
+
+  // Rdv que Marine a supprimés de son agenda : on les annule (la cliente est prévenue) et le créneau se libère.
+  if (calOk && calendar.name !== 'none') {
+    const present = new Set(calEvents.map((e) => e.ref).filter(Boolean));
+    const settled = Date.now() - 10 * 60000; // laisse à l'agenda le temps de refléter une création récente
+    const deleted = inRange.filter(
+      (b) =>
+        b.calendar_ref &&
+        !present.has(b.calendar_ref) &&
+        Date.parse(b.updated_at) < settled &&
+        b.start_utc >= rangeStart.toISO() &&
+        b.end_utc <= rangeEnd.toISO()
+    );
+    if (deleted.length) {
+      const { cancelDeletedFromCalendar } = await import('./bookings.js');
+      for (const b of deleted) {
+        await cancelDeletedFromCalendar(b).catch((e) => console.error('[calendar] sync failed:', e.message));
+        const i = busy.findIndex((x) => x.start === Date.parse(b.start_utc) && x.end === Date.parse(b.end_utc));
+        if (i >= 0) busy.splice(i, 1);
+      }
+    }
+  }
+
+  // Tous les événements « occupé » de l'agenda bloquent, y compris un rdv que Marine a déplacé à la main.
+  // Seul l'événement du rdv qu'on est en train de déplacer est ignoré.
+  const excludedRef = excludeId && inRange.find((b) => b.id === excludeId)?.calendar_ref;
+  for (const e of calEvents) if (!e.free && !(excludedRef && e.ref === excludedRef)) busy.push(e);
 
   const buf = bufferMinutes * 60000;
   return candidates

@@ -46,9 +46,32 @@ test('ics : génération et relecture', () => {
   const ics = buildIcs({ uid: 'u1', start: '2026-11-10T09:00:00Z', end: '2026-11-10T10:30:00Z', title: 'Test, avec ; virgules', method: null });
   assert.match(ics, /SUMMARY:Test\\, avec \; virgules/);
   const busy = parseBusyFromIcs(ics, () => NaN);
-  assert.deepEqual(busy, [{ start: Date.parse('2026-11-10T09:00:00Z'), end: Date.parse('2026-11-10T10:30:00Z'), ref: 'u1' }]);
+  assert.deepEqual(busy, [{ start: Date.parse('2026-11-10T09:00:00Z'), end: Date.parse('2026-11-10T10:30:00Z'), ref: 'u1', free: false }]);
   const local = 'BEGIN:VEVENT\r\nUID:z\r\nDTSTART;TZID=Europe/Paris:20261110T100000\r\nDTEND;TZID=Europe/Paris:20261110T110000\r\nEND:VEVENT';
   const conv = ({ y, mo, d, h, mi, s }, tz) => DateTime.fromObject({ year: y, month: mo, day: d, hour: h, minute: mi, second: s }, { zone: tz }).toMillis();
   assert.equal(parseBusyFromIcs(local, conv)[0].start, Date.parse('2026-11-10T09:00:00Z'));
-  assert.equal(parseBusyFromIcs('BEGIN:VEVENT\nTRANSP:TRANSPARENT\nDTSTART:20261110\nEND:VEVENT', conv).length, 0);
+  assert.equal(parseBusyFromIcs('BEGIN:VEVENT\nTRANSP:TRANSPARENT\nDTSTART:20261110\nEND:VEVENT', conv)[0].free, true);
+});
+
+test("rdv supprimé de l'agenda : annulé et créneau libéré ; rdv déplacé à la main : nouvelle heure bloquée", async () => {
+  const { calendar } = await import('../src/calendar/index.js');
+  const { db, getBooking } = await import('../src/db.js');
+  const base = {
+    event_type: '30min', name: 'B', email: 'b@b.c', phone: null, notes: null, option: null,
+    time_zone: 'Europe/Paris', attendee_token: 'a2', host_token: 'h2', video_url: 'v',
+  };
+  insertBookingIfFree({ ...base, id: 'del', start_utc: '2026-11-11T07:00:00.000Z', end_utc: '2026-11-11T07:30:00.000Z' }, 0);
+  insertBookingIfFree({ ...base, id: 'mov', start_utc: '2026-11-11T08:00:00.000Z', end_utc: '2026-11-11T08:30:00.000Z' }, 0);
+  db.prepare("UPDATE bookings SET calendar_ref = id || '@ref', updated_at = '2026-01-01T00:00:00.000Z' WHERE id IN ('del','mov')").run();
+  // Agenda simulé : « del » a disparu, « mov » a été déplacé à 10:00 UTC.
+  Object.assign(calendar, {
+    name: 'fake',
+    busy: async () => [{ start: Date.parse('2026-11-11T10:00:00Z'), end: Date.parse('2026-11-11T10:30:00Z'), ref: 'mov@ref' }],
+  });
+  const slots = await getSlots(getEventType('30min'), '2026-11-11', '2026-11-11', { now: DateTime.fromISO('2026-11-11T04:00:00Z') });
+  assert.equal(getBooking('del').status, 'cancelled');
+  assert.equal(getBooking('mov').status, 'confirmed');
+  assert.ok(slots.includes('2026-11-11T07:00:00Z'), 'créneau du rdv supprimé libéré');
+  assert.ok(!slots.includes('2026-11-11T08:00:00Z'), 'ancienne heure du rdv déplacé toujours bloquée (base)');
+  assert.ok(!slots.includes('2026-11-11T10:00:00Z'), 'nouvelle heure du rdv déplacé bloquée (agenda)');
 });

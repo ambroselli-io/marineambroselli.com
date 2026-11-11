@@ -77,14 +77,14 @@ export function parseBusyFromIcs(ics, hostZoneToMillis) {
       const m = ev.match(new RegExp(`^${name}(;[^:\\r\\n]*)?:(.*)$`, 'm'));
       return m && { params: m[1] || '', value: m[2].trim() };
     };
-    if (get('TRANSP')?.value === 'TRANSPARENT') continue;
     if (get('STATUS')?.value === 'CANCELLED') continue;
     const ds = get('DTSTART');
     const de = get('DTEND');
     if (!ds) continue;
     const start = toMillis(ds, hostZoneToMillis);
     const end = de ? toMillis(de, hostZoneToMillis) : start + (/VALUE=DATE/.test(ds.params) ? 86400000 : 0);
-    out.push({ start, end, ref: get('UID')?.value });
+    // « Disponible » (TRANSP:TRANSPARENT) : l'événement existe mais ne bloque pas de créneau.
+    out.push({ start, end, ref: get('UID')?.value, free: get('TRANSP')?.value === 'TRANSPARENT' });
   }
   return out;
 }

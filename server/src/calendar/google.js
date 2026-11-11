@@ -55,16 +55,16 @@ export async function busy(start, end) {
     });
     const json = await api('GET', `${cal()}/events?${q}`);
     for (const e of json.items || []) {
-      if (e.status === 'cancelled' || e.transparency === 'transparent') continue;
+      if (e.status === 'cancelled') continue;
+      const free = e.transparency === 'transparent' || !!e.attendees?.some((a) => a.self && a.responseStatus === 'declined');
       if (!e.start?.dateTime) {
         // Journée entière marquée « occupé » (ex. vacances) : bloque toute la journée.
         const s = DateTime.fromISO(e.start.date, { zone: config.host.timeZone });
         const en = DateTime.fromISO(e.end.date, { zone: config.host.timeZone });
-        out.push({ start: s.toMillis(), end: en.toMillis(), ref: e.id });
+        out.push({ start: s.toMillis(), end: en.toMillis(), ref: e.id, free });
         continue;
       }
-      if (e.attendees?.some((a) => a.self && a.responseStatus === 'declined')) continue;
-      out.push({ start: Date.parse(e.start.dateTime), end: Date.parse(e.end.dateTime), ref: e.id });
+      out.push({ start: Date.parse(e.start.dateTime), end: Date.parse(e.end.dateTime), ref: e.id, free });
     }
     pageToken = json.nextPageToken || '';
   } while (pageToken);
