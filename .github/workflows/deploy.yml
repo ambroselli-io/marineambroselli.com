@@ -53,6 +53,7 @@ jobs:
             cd /var/www/marineambroselli.com
             git fetch origin main
             git reset --hard origin/main
+            echo "Déployé : $(git log -1 --format='%h %s (%ci)')"
 
             # Site statique (site/) : servi directement par nginx, rien à faire.
             # API de prise de rdv (server/) : dépendances + redémarrage pm2

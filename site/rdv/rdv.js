@@ -2,6 +2,11 @@
 (function () {
   var RDV = (window.RDV = {});
 
+  // Version déployée, pour vérifier un déploiement depuis la console du navigateur
+  fetch('/api/health').then(function (r) { return r.json(); }).then(function (v) {
+    console.info('[marineambroselli.com] commit ' + v.commit + ' du ' + v.commitDate + ' · API démarrée le ' + v.startedAt);
+  }).catch(function () {});
+
   RDV.api = function (method, url, body) {
     return fetch(url, {
       method: method,
