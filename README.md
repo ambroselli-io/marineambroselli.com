@@ -63,6 +63,10 @@ npm test
 
 Sans clés Tipimail, les mails ne partent pas ; avec `MAIL_DUMP_DIR` ils sont écrits sur le disque (HTML + .ics).
 
+## Niki Coach (page de teasing)
+
+`site/niki/` : page de présentation de l'appli (bouton « Télécharger l'appli » de l'accueil), en attendant sa sortie. Le formulaire « Je veux être notifié(e) du lancement » appelle `POST /api/niki/inscription` : l'email est enregistré dans la table `niki_waitlist` (même base SQLite), la personne reçoit un mail de confirmation (Tipimail) et Marine une notification push. Pour récupérer la liste : `cd server && npm run niki-export > inscrites.csv`.
+
 ## À compléter
 
-Chercher les `[...]` dans `site/index.html` : lien de l'appli Niki Coach, LinkedIn, et deux phrases dans « À propos ».
+Chercher les `[...]` dans `site/index.html` : LinkedIn, et deux phrases dans « À propos ».

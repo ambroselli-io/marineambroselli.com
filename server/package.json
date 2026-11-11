@@ -7,7 +7,8 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test test/*.test.js",
-    "google-auth": "node scripts/google-auth.js"
+    "google-auth": "node scripts/google-auth.js",
+    "niki-export": "node scripts/niki-export.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.0.0",

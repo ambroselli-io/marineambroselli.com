@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Niki Coach · L'appli pour accompagner ton SMOP (ex-SOPK)</title>
+<meta name="description" content="Niki Coach, l'appli de Marine Ambroselli, naturopathe, pour accompagner ton SMOP (ex-SOPK) au naturel. Bientôt disponible : inscris-toi pour être prévenue du lancement.">
+<link rel="canonical" href="https://marineambroselli.com/niki/">
+<meta property="og:title" content="Niki Coach · Bientôt disponible">
+<meta property="og:description" content="L'appli pour accompagner ton SMOP (ex-SOPK) au naturel. Inscris-toi pour être prévenue du lancement.">
+<meta property="og:url" content="https://marineambroselli.com/niki/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://marineambroselli.com/niki/soleil.png">
+<meta name="theme-color" content="#FFFDF8">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="/style.css?v=2">
+<link rel="stylesheet" href="/niki/niki.css?v=1">
+</head>
+<body>
+<main class="page">
+<div class="card">
+
+<nav class="nav" aria-label="Menu principal">
+<a href="/">Accueil</a>
+<a href="/#apropos">À propos</a>
+<a href="/rdv/">RDV</a>
+</nav>
+
+<header class="niki-hero">
+<img class="niki-hero__sun" src="/niki/soleil.png" alt="" width="180" height="178">
+<p class="niki-hero__badge">Bientôt disponible</p>
+<h1>Niki Coach</h1>
+<p class="niki-hero__tagline">L'appli pour accompagner ton SMOP (ex-SOPK) au naturel, jour après jour.</p>
+<a class="niki-hero__cta" href="#inscription">Je veux être prévenue</a>
+</header>
+
+<section class="section">
+<h2>Tu n'es plus seule face à ton SMOP</h2>
+<p>Le SMOP (ex-SOPK) touche plus d'une femme sur 10 en France. Souvent diagnostiqué tard, rarement bien expliqué, il laisse beaucoup de femmes seules face à leurs symptômes.</p>
+<p>Niki Coach t'accompagne au quotidien : chaque jour, 4 petits gestes personnalisés, prouvés et expliqués, pour retrouver ton équilibre en 3 mois.</p>
+</section>
+
+<section class="section">
+<h2>4 piliers, chaque jour</h2>
+<ul class="pillars">
+<li><span class="pillars__name">Hormones</span><span>Comprendre ton cycle et ce qui le dérègle.</span></li>
+<li><span class="pillars__name">Nutrition</span><span>Des repères simples pour ton assiette.</span></li>
+<li><span class="pillars__name">Mouvement</span><span>Bouger juste ce qu'il faut, à ton rythme.</span></li>
+<li><span class="pillars__name">Mental</span><span>Souffler, dormir, apaiser le stress.</span></li>
+</ul>
+</section>
+
+<section class="section">
+<h2>Créée par une naturopathe</h2>
+<div class="niki-author">
+<img class="avatar niki-author__photo" src="/assets/marine.jpg" alt="Marine Ambroselli" width="72" height="72">
+<p>Je suis Marine, ingénieure et naturopathe. J'ai créé Niki Coach pour que chaque femme concernée par le SMOP soit accompagnée entre deux rendez-vous, avec la rigueur de l'ingénieure et l'approche globale de la naturopathe.</p>
+</div>
+</section>
+
+<section id="inscription" class="section niki-signup">
+<h2>Sois la première prévenue</h2>
+<p>Laisse ton email : je t'écris le jour du lancement de Niki Coach. Rien d'autre, promis.</p>
+<form id="niki-form" class="niki-form" novalidate>
+<label class="niki-form__label" for="niki-email">Ton adresse email</label>
+<div class="niki-form__row">
+<input id="niki-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="prenom@exemple.fr" required>
+<button type="submit" class="btn btn--accent">Je veux être notifié(e) du lancement</button>
+</div>
+<!-- pot de miel anti-robots : invisible pour les humains -->
+<input class="niki-form__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<p id="niki-msg" class="niki-form__msg" role="status" aria-live="polite"></p>
+</form>
+</section>
+
+<footer class="footer"><a href="/">marineambroselli.com</a></footer>
+</div>
+</main>
+<script>
+(function () {
+  var form = document.getElementById('niki-form');
+  var input = document.getElementById('niki-email');
+  var msg = document.getElementById('niki-msg');
+  var btn = form.querySelector('button');
+
+  function show(text, ok) {
+    msg.textContent = text;
+    msg.className = 'niki-form__msg ' + (ok ? 'is-ok' : 'is-error');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = input.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      show('Cette adresse email ne semble pas valide. Tu peux vérifier ?', false);
+      input.focus();
+      return;
+    }
+    btn.disabled = true;
+    show('Un instant…', true);
+    fetch('/api/niki/inscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, website: form.website.value })
+    })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || 'Erreur');
+          return data;
+        });
+      })
+      .then(function (data) {
+        form.classList.add('is-done');
+        show(data.already
+          ? 'Tu es déjà sur la liste, je te préviens dès le lancement !'
+          : 'Merci ! Tu seras parmi les premières à découvrir Niki Coach. Un petit mail de confirmation arrive.', true);
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        show(err.message && err.message !== 'Erreur' && err.message !== 'Failed to fetch'
+          ? err.message
+          : 'Oups, ça n\'a pas marché. Réessaie dans un instant.', false);
+      });
+  });
+})();
+</script>
+</body>
+</html>

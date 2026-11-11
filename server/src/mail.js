@@ -1,7 +1,7 @@
 // Envoi via l'API HTTP Tipimail : https://docs.tipimail.com/fr/integrate/api/messages
 import { config } from './config.js';
 
-export async function sendMail({ to, replyTo, subject, html, text, attachments = [] }) {
+export async function sendMail({ to, replyTo, subject, html, text, attachments = [], tags = ['rdv'] }) {
   const { apiUser, apiKey, from, fromName } = config.mail;
   if (!apiUser || !apiKey) {
     console.warn(`[mail] TIPIMAIL_API_USER/KEY absents, mail non envoyé à ${to.email} : ${subject}`);
@@ -38,7 +38,7 @@ export async function sendMail({ to, replyTo, subject, html, text, attachments =
           content: Buffer.from(a.content).toString('base64'),
         })),
       },
-      headers: { 'X-TM-TAGS': ['rdv'] },
+      headers: { 'X-TM-TAGS': tags },
     }),
   });
   const body = await res.text();

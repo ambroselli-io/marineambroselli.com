@@ -4,6 +4,7 @@ import { getSlots } from './slots.js';
 import { createBooking, authorize, publicView, cancelBooking, rescheduleBooking } from './bookings.js';
 import { buildIcs } from './ics.js';
 import { manageUrl } from './emails.js';
+import { joinWaitlist } from './niki.js';
 
 export const app = express();
 app.set('trust proxy', 'loopback');
@@ -58,6 +59,17 @@ app.post(
   wrap(async (req, res) => {
     if (req.body.website) return res.status(400).json({ error: 'Requête invalide' }); // pot de miel anti-robots
     res.status(201).json(await createBooking(req.body));
+  })
+);
+
+// Liste d'attente Niki Coach (page /niki/)
+app.post(
+  '/api/niki/inscription',
+  rateLimit(10),
+  wrap(async (req, res) => {
+    if (req.body.website) return res.status(400).json({ error: 'Requête invalide' }); // pot de miel anti-robots
+    const r = await joinWaitlist(req.body.email);
+    res.status(r.already ? 200 : 201).json(r);
   })
 );
 
