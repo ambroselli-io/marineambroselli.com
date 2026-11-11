@@ -53,25 +53,32 @@ test('ics : génération et relecture', () => {
   assert.equal(parseBusyFromIcs('BEGIN:VEVENT\nTRANSP:TRANSPARENT\nDTSTART:20261110\nEND:VEVENT', conv)[0].free, true);
 });
 
-test("rdv supprimé de l'agenda : annulé et créneau libéré ; rdv déplacé à la main : nouvelle heure bloquée", async () => {
+test("agenda de Marine : rdv supprimé → annulé, rdv déplacé → déplacé ; mails envoyés", async () => {
   const { calendar } = await import('../src/calendar/index.js');
   const { db, getBooking } = await import('../src/db.js');
   const base = {
     event_type: '30min', name: 'B', email: 'b@b.c', phone: null, notes: null, option: null,
     time_zone: 'Europe/Paris', attendee_token: 'a2', host_token: 'h2', video_url: 'v',
   };
-  insertBookingIfFree({ ...base, id: 'del', start_utc: '2026-11-11T07:00:00.000Z', end_utc: '2026-11-11T07:30:00.000Z' }, 0);
-  insertBookingIfFree({ ...base, id: 'mov', start_utc: '2026-11-11T08:00:00.000Z', end_utc: '2026-11-11T08:30:00.000Z' }, 0);
-  db.prepare("UPDATE bookings SET calendar_ref = id || '@ref', updated_at = '2026-01-01T00:00:00.000Z' WHERE id IN ('del','mov')").run();
-  // Agenda simulé : « del » a disparu, « mov » a été déplacé à 10:00 UTC.
+  const D = '2026-12-02'; // mercredi, dans le futur
+  insertBookingIfFree({ ...base, id: 'del', start_utc: `${D}T07:00:00.000Z`, end_utc: `${D}T07:30:00.000Z` }, 0);
+  insertBookingIfFree({ ...base, id: 'mov', start_utc: `${D}T08:00:00.000Z`, end_utc: `${D}T08:30:00.000Z` }, 0);
+  insertBookingIfFree({ ...base, id: 'far', start_utc: `${D}T09:00:00.000Z`, end_utc: `${D}T09:30:00.000Z` }, 0);
+  db.prepare("UPDATE bookings SET calendar_ref = id || '@ref', updated_at = '2026-01-01T00:00:00.000Z' WHERE id IN ('del','mov','far')").run();
+  // Agenda simulé : « del » supprimé, « mov » déplacé à 10:00 UTC le même jour, « far » déplacé au mois suivant.
   Object.assign(calendar, {
     name: 'fake',
-    busy: async () => [{ start: Date.parse('2026-11-11T10:00:00Z'), end: Date.parse('2026-11-11T10:30:00Z'), ref: 'mov@ref' }],
+    busy: async () => [{ start: Date.parse(`${D}T10:00:00Z`), end: Date.parse(`${D}T10:30:00Z`), ref: 'mov@ref' }],
+    get: async (b) =>
+      b.id === 'far' ? { start: Date.parse('2027-01-06T09:00:00Z'), end: Date.parse('2027-01-06T09:30:00Z') } : null,
   });
-  const slots = await getSlots(getEventType('30min'), '2026-11-11', '2026-11-11', { now: DateTime.fromISO('2026-11-11T04:00:00Z') });
+  const now = DateTime.fromISO(`${D}T04:00:00Z`);
+  const slots = await getSlots(getEventType('30min'), D, D, { now });
   assert.equal(getBooking('del').status, 'cancelled');
-  assert.equal(getBooking('mov').status, 'confirmed');
-  assert.ok(slots.includes('2026-11-11T07:00:00Z'), 'créneau du rdv supprimé libéré');
-  assert.ok(!slots.includes('2026-11-11T08:00:00Z'), 'ancienne heure du rdv déplacé toujours bloquée (base)');
-  assert.ok(!slots.includes('2026-11-11T10:00:00Z'), 'nouvelle heure du rdv déplacé bloquée (agenda)');
+  assert.equal(getBooking('mov').start_utc, `${D}T10:00:00.000Z`);
+  assert.equal(getBooking('mov').sequence, 1);
+  assert.equal(getBooking('far').status, 'confirmed');
+  assert.equal(getBooking('far').start_utc, '2027-01-06T09:00:00.000Z');
+  for (const t of ['07:00', '08:00', '09:00']) assert.ok(slots.includes(`${D}T${t}:00Z`), `${t} libéré`);
+  assert.ok(!slots.includes(`${D}T10:00:00Z`), 'nouvelle heure bloquée');
 });

@@ -133,6 +133,18 @@ export async function cancelDeletedFromCalendar(b) {
   await notify('cancelled', getBooking(b.id), getEventType(b.event_type), { by: 'host' });
 }
 
+// Marine a déplacé l'événement directement dans son agenda : on reporte la nouvelle heure et on prévient la cliente.
+export async function moveFromCalendar(b, start, end) {
+  const cur = getBooking(b.id);
+  if (cur?.status !== 'confirmed') return;
+  const startIso = new Date(start).toISOString();
+  const endIso = new Date(end).toISOString();
+  if (cur.start_utc === startIso && cur.end_utc === endIso) return;
+  updateBooking(b.id, { start_utc: startIso, end_utc: endIso, sequence: cur.sequence + 1 });
+  console.log(`[calendar] rdv ${b.id} (${b.name}) déplacé dans l'agenda : ${cur.start_utc} → ${startIso}`);
+  await notify('rescheduled', getBooking(b.id), getEventType(b.event_type), { by: 'host', previous: cur });
+}
+
 export async function rescheduleBooking(id, t, start) {
   const { b, role } = authorize(id, t);
   if (b.status !== 'confirmed') throw httpError(409, 'Ce rendez-vous est annulé.');
@@ -147,6 +159,7 @@ export async function rescheduleBooking(id, t, start) {
   await calendar.update(saved, calendarDetails(saved, type)).catch((e) => {
     console.error('[calendar] update failed:', e.message);
     calendarError = e.message.slice(0, 200);
+    updateBooking(id, { calendar_dirty: 1 });
   });
   await notify('rescheduled', saved, type, { by: role, previous: b, calendarError });
   return publicView(saved, role);

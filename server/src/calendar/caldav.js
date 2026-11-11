@@ -100,3 +100,16 @@ export async function remove(booking) {
   const res = await c.deleteCalendarObject({ calendarObject: { url: new URL(fileOf(booking), cal.url).href } });
   if (!res.ok && res.status !== 404) throw new Error(`CalDAV delete: ${res.status}`);
 }
+
+export async function get(booking) {
+  if (!booking.calendar_ref) return undefined;
+  const cal = await targetCalendar();
+  const url = new URL(fileOf(booking), cal.url).href;
+  // GET direct de l'objet : 404 = supprimé par Marine.
+  const auth = Buffer.from(`${config.caldav.username}:${config.caldav.password}`).toString('base64');
+  const res = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
+  if (res.status === 404 || res.status === 410) return null;
+  if (!res.ok) throw new Error(`CalDAV get: ${res.status}`);
+  const ev = parseBusyFromIcs(await res.text(), hostZoneToMillis)[0];
+  return ev ? { start: ev.start, end: ev.end } : null;
+}

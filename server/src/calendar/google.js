@@ -117,3 +117,18 @@ export async function remove(booking) {
   if (!booking.calendar_ref) return;
   await api('DELETE', `${cal()}/events/${booking.calendar_ref}?sendUpdates=none`);
 }
+
+export async function get(booking) {
+  if (!booking.calendar_ref) return undefined;
+  let ev;
+  try {
+    ev = await api('GET', `${cal()}/events/${booking.calendar_ref}`);
+  } catch (e) {
+    if (/: 404 /.test(e.message)) return null;
+    throw e;
+  }
+  if (!ev || ev.status === 'cancelled') return null;
+  const start = ev.start?.dateTime ? Date.parse(ev.start.dateTime) : DateTime.fromISO(ev.start.date, { zone: config.host.timeZone }).toMillis();
+  const end = ev.end?.dateTime ? Date.parse(ev.end.dateTime) : DateTime.fromISO(ev.end.date, { zone: config.host.timeZone }).toMillis();
+  return { start, end };
+}

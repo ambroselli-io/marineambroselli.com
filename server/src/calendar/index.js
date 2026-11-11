@@ -9,6 +9,7 @@ import * as caldav from './caldav.js';
  *   create(booking, details) -> { ref, videoUrl? }
  *   update(booking, details) -> void
  *   remove(booking) -> void
+ *   get(booking) -> { start: ms, end: ms } | null (supprimé) | undefined (inconnu) ; lève une erreur si l'agenda ne répond pas
  * details = { title, description, start: Date, end: Date, attendee: {name,email}, videoUrl }
  */
 const none = {
@@ -17,6 +18,7 @@ const none = {
   create: async () => ({ ref: null }),
   update: async () => {},
   remove: async () => {},
+  get: async () => undefined,
 };
 
 const providers = { google, caldav, none };

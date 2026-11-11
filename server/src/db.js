@@ -31,6 +31,12 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 CREATE INDEX IF NOT EXISTS bookings_start ON bookings(start_utc);
 `);
+// 1 = la dernière mise à jour de l'agenda a échoué : l'agenda n'est plus la référence pour ce rdv.
+try {
+  db.exec('ALTER TABLE bookings ADD COLUMN calendar_dirty INTEGER NOT NULL DEFAULT 0');
+} catch {
+  /* colonne déjà là */
+}
 
 const toBooking = (r) => r && { ...r };
 

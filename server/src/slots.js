@@ -41,10 +41,6 @@ export async function getSlots(eventType, fromDate, toDate, { excludeId = null, 
 
   const rangeStart = candidates[0].minus({ minutes: bufferMinutes });
   const rangeEnd = candidates.at(-1).plus({ minutes: eventType.duration + bufferMinutes });
-  const inRange = confirmedBetween(rangeStart.toISO(), rangeEnd.toISO());
-  const busy = inRange
-    .filter((b) => b.id !== excludeId)
-    .map((b) => ({ start: Date.parse(b.start_utc), end: Date.parse(b.end_utc) }));
   let calOk = true;
   const calEvents = await calendar.busy(rangeStart.toJSDate(), rangeEnd.toJSDate()).catch((e) => {
     console.error('[calendar] busy failed:', e.message);
@@ -52,27 +48,18 @@ export async function getSlots(eventType, fromDate, toDate, { excludeId = null, 
     return [];
   });
 
-  // Rdv que Marine a supprimés de son agenda : on les annule (la cliente est prévenue) et le créneau se libère.
+  // L'agenda de Marine fait foi : un rdv qu'elle a supprimé ou déplacé dans son agenda est annulé ou déplacé
+  // côté site, et la cliente reçoit le mail correspondant.
   if (calOk && calendar.name !== 'none') {
-    const present = new Set(calEvents.map((e) => e.ref).filter(Boolean));
-    const settled = Date.now() - 10 * 60000; // laisse à l'agenda le temps de refléter une création récente
-    const deleted = inRange.filter(
-      (b) =>
-        b.calendar_ref &&
-        !present.has(b.calendar_ref) &&
-        Date.parse(b.updated_at) < settled &&
-        b.start_utc >= rangeStart.toISO() &&
-        b.end_utc <= rangeEnd.toISO()
+    await syncFromCalendar(confirmedBetween(rangeStart.toISO(), rangeEnd.toISO()), calEvents).catch((e) =>
+      console.error('[calendar] sync failed:', e.message)
     );
-    if (deleted.length) {
-      const { cancelDeletedFromCalendar } = await import('./bookings.js');
-      for (const b of deleted) {
-        await cancelDeletedFromCalendar(b).catch((e) => console.error('[calendar] sync failed:', e.message));
-        const i = busy.findIndex((x) => x.start === Date.parse(b.start_utc) && x.end === Date.parse(b.end_utc));
-        if (i >= 0) busy.splice(i, 1);
-      }
-    }
   }
+
+  const inRange = confirmedBetween(rangeStart.toISO(), rangeEnd.toISO());
+  const busy = inRange
+    .filter((b) => b.id !== excludeId)
+    .map((b) => ({ start: Date.parse(b.start_utc), end: Date.parse(b.end_utc) }));
 
   // Tous les événements « occupé » de l'agenda bloquent, y compris un rdv que Marine a déplacé à la main.
   // Seul l'événement du rdv qu'on est en train de déplacer est ignoré.
@@ -87,6 +74,24 @@ export async function getSlots(eventType, fromDate, toDate, { excludeId = null, 
       return !busy.some((b) => overlaps(start - buf, end + buf, b.start, b.end));
     })
     .map((s) => s.toISO({ suppressMilliseconds: true }));
+}
+
+async function syncFromCalendar(bookings, calEvents) {
+  const byRef = new Map(calEvents.filter((e) => e.ref).map((e) => [e.ref, e]));
+  // Laisse à l'agenda le temps de refléter une création ou un déplacement fait depuis le site.
+  const settled = Date.now() - 10 * 60000;
+  const candidates = bookings.filter(
+    (b) => b.calendar_ref && !b.calendar_dirty && Date.parse(b.updated_at) < settled && Date.parse(b.end_utc) > Date.now()
+  );
+  if (!candidates.length) return;
+  const { cancelDeletedFromCalendar, moveFromCalendar } = await import('./bookings.js');
+  for (const b of candidates) {
+    // Absent de la plage : soit supprimé, soit déplacé ailleurs. On va lire l'événement lui-même pour trancher.
+    const ev = byRef.get(b.calendar_ref) ?? (await calendar.get(b));
+    if (ev === null) await cancelDeletedFromCalendar(b);
+    else if (ev && (ev.start !== Date.parse(b.start_utc) || ev.end !== Date.parse(b.end_utc)))
+      await moveFromCalendar(b, ev.start, ev.end);
+  }
 }
 
 export async function isSlotAvailable(eventType, startIso, opts = {}) {
