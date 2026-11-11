@@ -2,11 +2,14 @@
   "name": "marineambroselli-rdv",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test test/*.test.js",
+    "test:e2e": "node --test --test-concurrency=1 test/e2e/*.e2e.js",
     "google-auth": "node scripts/google-auth.js",
     "niki-export": "node scripts/niki-export.js"
   },
@@ -15,5 +18,8 @@
     "express": "^5.1.0",
     "luxon": "^3.7.2",
     "tsdav": "^2.1.0"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
   }
 }

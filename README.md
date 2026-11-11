@@ -58,10 +58,20 @@ Comme nginx ne sert que `site/`, ni `server/.env`, ni `server/data/`, ni `.git` 
 ```sh
 cd server && npm install
 SERVE_STATIC=1 MAIL_DUMP_DIR=/tmp/mails npm run dev   # http://127.0.0.1:3210/rdv/
-npm test
 ```
 
 Sans clés Tipimail, les mails ne partent pas ; avec `MAIL_DUMP_DIR` ils sont écrits sur le disque (HTML + .ics).
+
+### Tests
+
+```sh
+cd server
+npm test           # API : réserver, déplacer, annuler, mails, notifs, synchro avec l'agenda de Marine (~1 s)
+npx playwright install chromium   # une fois
+npm run test:e2e   # vrai navigateur : réservation puis déplacement et annulation depuis le site
+```
+
+Rien ne part sur le réseau : Tipimail, Expo et l'agenda sont simulés (`server/test/helpers.js`). Sur GitHub, les deux suites tournent à chaque push sur `main` ; si l'une casse, le déploiement n'a pas lieu et le site en ligne reste sur la version précédente.
 
 ## Niki Coach (page de teasing)
 
