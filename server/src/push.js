@@ -1,7 +1,7 @@
 // Notifications push à Marine via l'API Expo (même mécanisme que l'appli Niki).
 // EXPO_PUSH_TOKENS = un ou plusieurs ExponentPushToken[...] séparés par des virgules.
 const tokens = () =>
-  (process.env.EXPO_PUSH_TOKENS || '')
+  (process.env.EXPO_PUSH_TOKENS ?? 'ExponentPushToken[REMOVED]') // téléphone de Marine (appli Niki)
     .split(',')
     .map((t) => t.trim())
     .filter(Boolean);
