@@ -46,6 +46,10 @@
 }
 .niki-hero__cta:hover { color: var(--text-strong); }
 
+/* Texte */
+.section strong { font-weight: 500; color: var(--text-strong); }
+.section .niki-note { font-size: 14px; font-style: italic; color: var(--muted); }
+
 /* Piliers */
 .pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .pillars li {
@@ -98,6 +102,7 @@
   .pillars { grid-template-columns: 1fr; gap: 8px; }
   .pillars li { padding: 14px; font-size: 14px; }
   .niki-author { gap: 12px; }
+  .section .niki-note { font-size: 13px; }
   .niki-author__photo { width: 60px; height: 60px; }
   .niki-signup { margin: 0 -16px; padding: 28px 16px 30px; }
 }
