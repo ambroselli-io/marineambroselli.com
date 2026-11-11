@@ -6,6 +6,13 @@ import { pushToHost } from './push.js';
 
 const h = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+// Numéro cliquable et jamais coupé en fin de ligne (espaces insécables). 06… → +336… pour tel: et WhatsApp.
+const intl = (p) => String(p).replace(/[^\d+]/g, '').replace(/^00/, '+').replace(/^0(\d{9})$/, '+33$1');
+const phoneLink = (p) =>
+  `<a href="tel:${intl(p)}" style="color:#2f2a24;white-space:nowrap">${h(p).replace(/ /g, '&nbsp;')}</a>`;
+const whatsappLink = (p, label = 'WhatsApp') =>
+  `<a href="https://wa.me/${intl(p).replace('+', '')}" style="color:#2f2a24;white-space:nowrap">${label}</a>`;
+
 export const manageUrl = (b, role) =>
   `${config.siteUrl}/rdv/gerer.html?id=${b.id}&t=${role === 'host' ? b.host_token : b.attendee_token}`;
 
@@ -54,7 +61,7 @@ ${row('Quoi', h(type.title))}
 ${row('Quand', h(formatWhen(b, zone)))}
 ${row(forHost ? 'Avec' : 'Avec', h(forHost ? b.name : config.host.name))}
 ${forHost ? row('Email', `<a href="mailto:${h(b.email)}" style="color:#2f2a24">${h(b.email)}</a>`) : ''}
-${forHost && b.phone ? row('Téléphone', h(b.phone)) : ''}
+${forHost && b.phone ? row('Téléphone', `${phoneLink(b.phone)} · ${whatsappLink(b.phone)}`) : ''}
 ${b.option ? row(type.options?.label || 'Option', h(b.option)) : ''}
 ${b.notes ? row('Notes', h(b.notes).replace(/\n/g, '<br>')) : ''}
 ${b.video_url ? row('Visio', `<a href="${h(b.video_url)}" style="color:#2f2a24">${h(b.video_url)}</a>`) : ''}
@@ -117,7 +124,7 @@ ${
     : `<p>${button(b.video_url, 'Rejoindre la visio', true)}${button(manageUrl(b, 'attendee'), 'Modifier ou annuler')}</p>
 <p style="font-size:14px;line-height:1.6">Pour l'ajouter à votre agenda, ouvrez le fichier joint <b>rendez-vous.ics</b>, ou <a href="${h(gcal)}" style="color:#2f2a24">ajoutez-le à Google Agenda</a>.</p>`
 }
-<p style="font-size:14px;line-height:1.6;color:#6b6257">Une question ? Répondez simplement à ce mail, ou contactez-moi au ${h(host.phone)} (appel ou WhatsApp).</p>`
+<p style="font-size:14px;line-height:1.6;color:#6b6257">Une question ? Répondez simplement à ce mail, ou contactez-moi au ${phoneLink(host.phone)} (appel ou ${whatsappLink(host.phone)}).</p>`
   );
   const attendeeText = textVersion([
     `Bonjour ${b.name},`,
