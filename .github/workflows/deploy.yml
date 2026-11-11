@@ -21,18 +21,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
       - name: Install dependencies
         working-directory: server
         run: npm ci
       - name: Run API tests
         working-directory: server
         run: npm test
-      - name: Install Chromium
-        working-directory: server
-        run: npx playwright install --with-deps chromium
+      # Google Chrome est déjà installé sur les runners GitHub : on s'en sert au lieu de télécharger Chromium.
       - name: Run browser tests
         working-directory: server
         run: npm run test:e2e
+        env:
+          PW_CHANNEL: chrome
 
   deploy:
     needs: tests
