@@ -15,6 +15,8 @@ Parcours copié de cal.com/marine.ambroselli : choix du type (consultation 90 mi
 2. il est ajouté à l'agenda de Marine (`CALENDAR_PROVIDER`) ; ses créneaux déjà occupés dans cet agenda ne sont pas proposés ;
 3. un mail part (Tipimail) à la personne et à Marine, avec le lien visio, un lien pour modifier/annuler et un `.ics` (invitation) en pièce jointe.
 
+Marine reçoit aussi une notification push (création, déplacement, annulation) sur l'appli Niki via l'API Expo si `EXPO_PUSH_TOKENS` est renseigné.
+
 Chacun a son propre lien de gestion (jeton différent pour Marine et pour la personne). Déplacer ou annuler met à jour l'agenda et renvoie un mail aux deux (avec un `.ics` de mise à jour ou d'annulation).
 
 Visio : salle Jitsi fixe `https://meet.jit.si/marineambroselli` (`VIDEO_URL_TEMPLATE`). Fuseaux : les horaires de Marine sont en heure de Grèce (`HOST_TIMEZONE=Europe/Athens`, lun–ven 9h–17h), les clientes voient l'heure de Paris par défaut (modifiable sur la page), Marine reçoit ses mails en heure de Grèce.

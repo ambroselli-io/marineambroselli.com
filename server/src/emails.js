@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { config } from './config.js';
 import { buildIcs, googleCalendarLink } from './ics.js';
 import { sendMail } from './mail.js';
+import { pushToHost } from './push.js';
 
 const h = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -163,7 +164,10 @@ ${cancelled ? '' : `<p>${button(b.video_url, 'Rejoindre la visio', true)}${butto
   // Si l'agenda est synchronisé, pas besoin de .ics pour Marine (sinon doublon).
   const hostAttachments = config.calendarProvider === 'none' || calendarError ? [icsAttachment] : [];
 
+  const short = DateTime.fromISO(b.start_utc, { zone: hz }).setLocale('fr').toFormat("cccc d LLLL 'à' HH'h'mm");
+  const pushTitle = { created: '📅 Nouveau rdv', rescheduled: '🔁 Rdv déplacé', cancelled: '❌ Rdv annulé' }[kind];
   const results = await Promise.allSettled([
+    pushToHost({ title: pushTitle, body: `${b.name} · ${type.title} · ${short}`, url: manageUrl(b, 'host') }),
     sendMail({ to: { email: b.email, name: b.name }, replyTo: { email: host.email, name: host.name }, subject: `${titles[0]} : ${type.title}`, html: attendeeHtml, text: attendeeText, attachments: [icsAttachment] }),
     sendMail({ to: { email: host.email, name: host.name }, replyTo: { email: b.email, name: b.name }, subject: titles[1], html: hostHtml, text: hostText, attachments: hostAttachments }),
   ]);
