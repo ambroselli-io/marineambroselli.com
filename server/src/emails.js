@@ -58,7 +58,7 @@ ${header}${
 <h1 style="margin:0 0 20px;font-family:${serif};font-weight:400;font-size:26px;line-height:1.2;color:#2f2a24${photo ? ';text-align:center' : ''}">${h(title)}</h1>
 <div style="font-family:${sans}">${bodyHtml}</div>${
     photo
-      ? `<p style="margin:24px 0 0;padding-top:18px;border-top:1.5px solid #fedf9e;font-size:15px;line-height:1.5;color:#534b41">À très vite,<br><span style="font-family:${serif};font-size:18px;color:#2f2a24">Marine Ambroselli</span><br><span style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6257">Ingénieure &amp; naturopathe</span></p>`
+      ? `<p style="margin:24px 0 0;padding-top:18px;border-top:1.5px solid #fedf9e;font-size:15px;line-height:1.6;color:#534b41">À très vite,<br><span style="color:#2f2a24;font-weight:500">Marine Ambroselli</span><br>Ingénieure &amp; naturopathe</p>`
       : ''
   }
 </div>

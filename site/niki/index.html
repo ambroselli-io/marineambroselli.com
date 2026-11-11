@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Niki Coach · L'appli pour accompagner ton SMOP (ex-SOPK)</title>
-<meta name="description" content="Niki Coach, l'appli de Marine Ambroselli, naturopathe, pour accompagner ton SMOP (ex-SOPK) au naturel. Bientôt disponible : inscris-toi pour être prévenue du lancement.">
+<title>Niki Coach · L'appli pour accompagner votre SMOP (ex-SOPK)</title>
+<meta name="description" content="Niki Coach, l'appli de Marine Ambroselli, naturopathe, pour accompagner votre SMOP (ex-SOPK) au naturel. Bientôt disponible : inscrivez-vous pour être prévenue du lancement.">
 <link rel="canonical" href="https://marineambroselli.com/niki/">
 <meta property="og:title" content="Niki Coach · Bientôt disponible">
-<meta property="og:description" content="L'appli pour accompagner ton SMOP (ex-SOPK) au naturel. Inscris-toi pour être prévenue du lancement.">
+<meta property="og:description" content="L'appli pour accompagner votre SMOP (ex-SOPK) au naturel. Inscrivez-vous pour être prévenue du lancement.">
 <meta property="og:url" content="https://marineambroselli.com/niki/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://marineambroselli.com/niki/soleil.png">
@@ -34,24 +34,24 @@
 <img class="niki-hero__sun" src="/niki/soleil.png" alt="" width="180" height="178">
 <p class="niki-hero__badge">Bientôt disponible</p>
 <h1>Niki Coach</h1>
-<p class="niki-hero__tagline">L'appli pour accompagner ton SMOP (ex-SOPK) au naturel, jour après jour.</p>
+<p class="niki-hero__tagline">L'appli pour accompagner votre SMOP (ex-SOPK) au naturel, jour après jour.</p>
 <a class="niki-hero__cta" href="#inscription">Je veux être prévenue</a>
 </header>
 
 <section class="section">
-<h2>Tu n'es plus seule face à ton SMOP</h2>
+<h2>Vous n'êtes plus seule face à votre SMOP</h2>
 <p>Le SMOP (ex-SOPK) concerne <strong>plus d'une femme sur 10</strong> en France. C'est un syndrome complexe, qui touche à la fois notre <strong>féminité</strong>, notre énergie, notre humeur et notre <strong>santé</strong>. Entre deux rendez-vous médicaux, beaucoup de femmes se sentent seules pour savoir quoi faire au quotidien.</p>
-<p>Niki Coach te propose un <strong>programme personnalisé</strong>, construit pour toi à partir d'un bilan de départ. Chaque jour, 4 petits gestes appuyés sur la recherche, pour retrouver ton équilibre naturellement en 3 mois.</p>
-<p><strong>Chaque geste est expliqué</strong> : tu sais pourquoi tu le fais et ce qu'il change pour toi. En suivant ton cycle, tu comprends mieux comment fonctionne ton corps et comment tes habitudes influencent ton équilibre.</p>
-<p class="niki-note">Niki Coach vient en complément de ton suivi médical, il ne le remplace pas.</p>
+<p>Niki Coach vous propose un <strong>programme personnalisé</strong>, construit pour vous à partir d'un bilan de départ. Chaque jour, 4 petits gestes appuyés sur la recherche, pour retrouver votre équilibre naturellement en 3 mois.</p>
+<p><strong>Chaque geste est expliqué</strong> : vous savez pourquoi vous le faites et ce qu'il change pour vous. En suivant votre cycle, vous comprenez mieux comment fonctionne votre corps et comment vos habitudes influencent votre équilibre.</p>
+<p class="niki-note">Niki Coach vient en complément de votre suivi médical, il ne le remplace pas.</p>
 </section>
 
 <section class="section">
 <h2>4 piliers, chaque jour</h2>
 <ul class="pillars">
-<li><span class="pillars__name">Nutrition</span><span>Des repères simples pour ton assiette.</span></li>
+<li><span class="pillars__name">Nutrition</span><span>Des repères simples pour votre assiette.</span></li>
 <li><span class="pillars__name">Mental</span><span>Souffler et apaiser le stress.</span></li>
-<li><span class="pillars__name">Mouvement</span><span>Bouger juste ce qu'il faut, à ton rythme.</span></li>
+<li><span class="pillars__name">Mouvement</span><span>Bouger juste ce qu'il faut, à votre rythme.</span></li>
 <li><span class="pillars__name">Vitalité</span><span>Sommeil, énergie et récupération.</span></li>
 </ul>
 </section>
@@ -65,10 +65,10 @@
 </section>
 
 <section id="inscription" class="section niki-signup">
-<h2>Sois la première prévenue</h2>
-<p>Laisse ton email : je t'écris le jour du lancement de Niki Coach. Rien d'autre, promis.</p>
+<h2>Soyez la première prévenue</h2>
+<p>Laissez votre email : je vous écris le jour du lancement de Niki Coach. Rien d'autre, promis.</p>
 <form id="niki-form" class="niki-form" novalidate>
-<label class="niki-form__label" for="niki-email">Ton adresse email</label>
+<label class="niki-form__label" for="niki-email">Votre adresse email</label>
 <div class="niki-form__row">
 <input id="niki-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="prenom@exemple.fr" required>
 <button type="submit" class="btn btn--accent">Je veux être notifié(e) du lancement</button>
@@ -98,7 +98,7 @@
     e.preventDefault();
     var email = input.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      show('Cette adresse email ne semble pas valide. Tu peux vérifier ?', false);
+      show('Cette adresse email ne semble pas valide. Pouvez-vous vérifier ?', false);
       input.focus();
       return;
     }
@@ -118,14 +118,14 @@
       .then(function (data) {
         form.classList.add('is-done');
         show(data.already
-          ? 'Tu es déjà sur la liste, je te préviens dès le lancement !'
-          : 'Merci ! Tu seras parmi les premières à découvrir Niki Coach. Un petit mail de confirmation arrive.', true);
+          ? 'Vous êtes déjà sur la liste, je vous préviens dès le lancement !'
+          : 'Merci ! Vous serez parmi les premières à découvrir Niki Coach. Un petit mail de confirmation arrive.', true);
       })
       .catch(function (err) {
         btn.disabled = false;
         show(err.message && err.message !== 'Erreur' && err.message !== 'Failed to fetch'
           ? err.message
-          : 'Oups, ça n\'a pas marché. Réessaie dans un instant.', false);
+          : 'Oups, ça n\'a pas marché. Réessayez dans un instant.', false);
       });
   });
 })();

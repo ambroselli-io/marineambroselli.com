@@ -40,7 +40,7 @@
   }
   function back(label, fn) { return el('button', { type: 'button', class: 'back', onclick: fn, text: '← ' + label }); }
   function meta(type) {
-    return el('ul', { class: 'meta' }, [el('li', { text: type.duration + ' min' }), el('li', { text: 'En visio' })]);
+    return el('ul', { class: 'meta' }, [el('li', { text: type.duration + ' min' }), el('li', { text: 'En visio' })].concat(type.price ? [el('li', { text: type.price })] : []));
   }
 
   function chooseType() {
@@ -51,7 +51,7 @@
         return el('button', { type: 'button', class: 'type', onclick: function () { pickTime(t); } }, [
           el('span', { class: 'type__head' }, [
             el('span', { class: 'type__title', text: t.title }),
-            el('span', { class: 'type__duration', text: t.duration + ' min' }),
+            el('span', { class: 'type__duration', text: t.duration + ' min' + (t.price ? ' · ' + t.price : '') }),
           ]),
           t.summary ? el('span', { class: 'type__summary', text: t.summary }) : null,
           el('span', { class: 'type__more' }, [el('span', { text: 'En savoir plus et réserver' }), el('span', { 'aria-hidden': 'true', text: ' →' })]),

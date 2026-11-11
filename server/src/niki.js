@@ -26,7 +26,7 @@ export function waitlistCount() {
 
 export async function joinWaitlist(rawEmail) {
   const email = String(rawEmail || '').trim().toLowerCase();
-  if (email.length > 254 || !EMAIL_RE.test(email)) throw badRequest('Cette adresse email ne semble pas valide. Tu peux vérifier ?');
+  if (email.length > 254 || !EMAIL_RE.test(email)) throw badRequest('Cette adresse email ne semble pas valide. Pouvez-vous vérifier ?');
 
   const { changes } = db.prepare('INSERT OR IGNORE INTO niki_waitlist (email) VALUES (?)').run(email);
   if (!changes) return { ok: true, already: true };
@@ -70,17 +70,17 @@ function sendToHost(email, count) {
 
 function sendConfirmation(email) {
   const html = layout(
-    'Merci, tu es sur la liste !',
+    'Merci, vous êtes sur la liste !',
     `<p style="font-size:15px;line-height:1.6;margin:0 0 14px">Bonjour,</p>
-<p style="font-size:15px;line-height:1.6;margin:0 0 14px">Merci pour ton inscription ! Tu fais partie des premières à attendre <b style="color:#2f2a24">Niki Coach</b>, l'appli pour accompagner ton SMOP (ex-SOPK) au naturel.</p>
-<p style="font-size:15px;line-height:1.6;margin:0">Je t'écris dès que l'appli est disponible. D'ici là, n'hésite pas à répondre à ce mail si tu as une question.</p>`,
+<p style="font-size:15px;line-height:1.6;margin:0 0 14px">Merci pour votre inscription ! Vous faites partie des premières à attendre <b style="color:#2f2a24">Niki Coach</b>, l'appli pour accompagner votre SMOP (ex-SOPK) au naturel.</p>
+<p style="font-size:15px;line-height:1.6;margin:0">Je vous écris dès que l'appli est disponible. D'ici là, n'hésitez pas à répondre à ce mail si vous avez une question.</p>`,
     { photo: true }
   );
   const text = [
     'Bonjour,',
     '',
-    "Merci pour ton inscription ! Tu fais partie des premières à attendre Niki Coach, l'appli pour accompagner ton SMOP (ex-SOPK) au naturel.",
-    "Je t'écris dès que l'appli est disponible. D'ici là, n'hésite pas à répondre à ce mail si tu as une question.",
+    "Merci pour votre inscription ! Vous faites partie des premières à attendre Niki Coach, l'appli pour accompagner votre SMOP (ex-SOPK) au naturel.",
+    "Je vous écris dès que l'appli est disponible. D'ici là, n'hésitez pas à répondre à ce mail si vous avez une question.",
     '',
     'À très vite,',
     'Marine',
@@ -88,7 +88,7 @@ function sendConfirmation(email) {
   return sendMail({
     to: { email },
     replyTo: { email: config.host.email, name: config.host.name },
-    subject: 'Tu seras prévenue du lancement de Niki Coach',
+    subject: 'Vous serez prévenue du lancement de Niki Coach',
     html,
     text,
     tags: ['niki-waitlist'],
