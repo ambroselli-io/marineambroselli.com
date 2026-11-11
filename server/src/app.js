@@ -4,6 +4,7 @@ import { getSlots } from './slots.js';
 import { createBooking, authorize, publicView, cancelBooking, rescheduleBooking } from './bookings.js';
 import { buildIcs } from './ics.js';
 import { manageUrl } from './emails.js';
+import { version } from './version.js';
 
 export const app = express();
 app.set('trust proxy', 'loopback');
@@ -30,7 +31,7 @@ setInterval(() => hits.clear(), 6 * 3600000).unref();
 
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
 
-app.get('/api/health', (req, res) => res.json({ ok: true, calendar: config.calendarProvider }));
+app.get('/api/health', (req, res) => res.json({ ok: true, calendar: config.calendarProvider, ...version }));
 
 app.get('/api/event-types', (req, res) => {
   res.json({

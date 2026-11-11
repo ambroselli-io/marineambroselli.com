@@ -106,6 +106,9 @@
 </div>
 </main>
 <script>
+fetch('/api/health').then(function (r) { return r.json(); }).then(function (v) {
+  console.info('[marineambroselli.com] commit ' + v.commit + ' du ' + v.commitDate + ' · API démarrée le ' + v.startedAt);
+}).catch(function () {});
 (function () {
   var btn = document.querySelector('.toggle');
   var more = document.getElementById('apropos-suite');
