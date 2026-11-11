@@ -47,9 +47,9 @@ function sendConfirmation(email) {
   const html = `<!doctype html><html lang="fr"><body style="margin:0;background:#FFFDF8;font-family:Helvetica,Arial,sans-serif;color:#534b41">
 <div style="max-width:560px;margin:0 auto;padding:24px 16px">
 <div style="border:3px solid #fedf9e;background:#FFFDF8">
-<div style="background:#000;padding:28px 24px;text-align:center">
+<div style="padding:28px 24px 0;text-align:center">
 <img src="${config.siteUrl}/niki/soleil.png" alt="" width="96" height="95" style="display:inline-block">
-<h1 style="margin:12px 0 0;font-family:Georgia,serif;font-weight:400;font-size:28px;color:#FED88E">Niki Coach</h1>
+<h1 style="margin:12px 0 0;font-family:Georgia,serif;font-weight:400;font-size:28px;color:#2f2a24">Niki Coach</h1>
 </div>
 <div style="padding:24px">
 <p style="font-size:15px;line-height:1.6;margin:0 0 14px">Bonjour,</p>
