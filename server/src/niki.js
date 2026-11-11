@@ -34,6 +34,7 @@ export async function joinWaitlist(rawEmail) {
   // Les envois ne doivent pas faire échouer l'inscription.
   await Promise.allSettled([
     sendConfirmation(email).catch((e) => console.error('[niki] mail', e.message)),
+    sendToHost(email, count).catch((e) => console.error('[niki] mail Marine', e.message)),
     pushToHost({
       title: 'Niki Coach : nouvelle inscription',
       body: `${email} veut être prévenue du lancement (${count} inscrite${count > 1 ? 's' : ''}).`,
@@ -41,6 +42,31 @@ export async function joinWaitlist(rawEmail) {
     }),
   ]);
   return { ok: true, already: false };
+}
+
+const h = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+// Mail à Marine : « Répondre » écrit directement à la personne inscrite.
+function sendToHost(email, count) {
+  const when = new Date().toLocaleString('fr-FR', { timeZone: config.host.timeZone, dateStyle: 'long', timeStyle: 'short' });
+  const total = `${count} inscrite${count > 1 ? 's' : ''} au total`;
+  const html = `<!doctype html><html lang="fr"><body style="margin:0;background:#FFFDF8;font-family:Helvetica,Arial,sans-serif;color:#534b41">
+<div style="max-width:560px;margin:0 auto;padding:24px 16px">
+<div style="border:3px solid #fedf9e;padding:24px;background:#FFFDF8">
+<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-weight:400;font-size:22px;color:#2f2a24">Nouvelle inscription Niki Coach</h1>
+<p style="font-size:15px;line-height:1.6;margin:0 0 8px"><b style="color:#2f2a24">${h(email)}</b> veut être prévenue du lancement.</p>
+<p style="font-size:14px;line-height:1.6;margin:0 0 16px;color:#6b6257">Le ${h(when)} (heure de Grèce) · ${total}</p>
+<p style="font-size:14px;line-height:1.6;margin:0">Pour lui écrire, réponds simplement à ce mail.</p>
+</div></div></body></html>`;
+  const text = [`Nouvelle inscription Niki Coach : ${email}`, `Le ${when} (heure de Grèce) · ${total}`, '', 'Pour lui écrire, réponds simplement à ce mail.'].join('\n');
+  return sendMail({
+    to: { email: config.host.email, name: config.host.name },
+    replyTo: { email },
+    subject: `Niki Coach : nouvelle inscription de ${email}`,
+    html,
+    text,
+    tags: ['niki-waitlist'],
+  });
 }
 
 function sendConfirmation(email) {

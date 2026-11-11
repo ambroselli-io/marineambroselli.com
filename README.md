@@ -75,7 +75,7 @@ Rien ne part sur le réseau : Tipimail, Expo et l'agenda sont simulés (`server/
 
 ## Niki Coach (page de teasing)
 
-`site/niki/` : page de présentation de l'appli (bouton « Télécharger l'appli » de l'accueil), en attendant sa sortie. Le formulaire « Je veux être notifié(e) du lancement » appelle `POST /api/niki/inscription` : l'email est enregistré dans la table `niki_waitlist` (même base SQLite), la personne reçoit un mail de confirmation (Tipimail) et Marine une notification push. Pour récupérer la liste : `cd server && npm run niki-export > inscrites.csv`.
+`site/niki/` : page de présentation de l'appli (bouton « Télécharger l'appli » de l'accueil), en attendant sa sortie. Le formulaire « Je veux être notifié(e) du lancement » appelle `POST /api/niki/inscription` : l'email est enregistré dans la table `niki_waitlist` (même base SQLite), la personne reçoit un mail de confirmation (Tipimail), et Marine reçoit un mail (« Répondre » écrit à la personne) et une notification push. Pour récupérer la liste : `cd server && npm run niki-export > inscrites.csv`.
 
 ## À compléter
 
