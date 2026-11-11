@@ -164,10 +164,25 @@ ${cancelled ? '' : `<p>${button(b.video_url, 'Rejoindre la visio', true)}${butto
   // Si l'agenda est synchronisé, pas besoin de .ics pour Marine (sinon doublon).
   const hostAttachments = config.calendarProvider === 'none' || calendarError ? [icsAttachment] : [];
 
-  const short = DateTime.fromISO(b.start_utc, { zone: hz }).setLocale('fr').toFormat("cccc d LLLL 'à' HH'h'mm");
-  const pushTitle = { created: '📅 Nouveau rdv', rescheduled: '🔁 Rdv déplacé', cancelled: '❌ Rdv annulé' }[kind];
+  const shortWhen = (x) => DateTime.fromISO(x.start_utc, { zone: hz }).setLocale('fr').toFormat("cccc d LLLL 'à' HH'h'mm");
+  const pushTitle = {
+    created: '📅 Nouveau rdv',
+    rescheduled: by === 'host' ? '🔁 Rdv déplacé (par toi)' : '🔁 Rdv déplacé',
+    cancelled: by === 'host' ? '❌ Rdv annulé (par toi)' : '❌ Rdv annulé',
+  }[kind];
+  const pushBody = [
+    `${b.name} · ${type.title}`,
+    kind === 'rescheduled' && previous ? `${shortWhen(previous)} → ${shortWhen(b)}` : shortWhen(b),
+    kind === 'cancelled' && b.cancel_reason && `Motif : ${b.cancel_reason}`,
+    kind !== 'cancelled' && b.option && b.option,
+    kind !== 'cancelled' && b.notes && `Notes : ${b.notes}`,
+    kind === 'created' && b.phone && `Tél : ${b.phone}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .slice(0, 900);
   const results = await Promise.allSettled([
-    pushToHost({ title: pushTitle, body: `${b.name} · ${type.title} · ${short}`, url: manageUrl(b, 'host') }),
+    pushToHost({ title: pushTitle, body: pushBody, url: manageUrl(b, 'host') }),
     sendMail({ to: { email: b.email, name: b.name }, replyTo: { email: host.email, name: host.name }, subject: `${titles[0]} : ${type.title}`, html: attendeeHtml, text: attendeeText, attachments: [icsAttachment] }),
     sendMail({ to: { email: host.email, name: host.name }, replyTo: { email: b.email, name: b.name }, subject: titles[1], html: hostHtml, text: hostText, attachments: hostAttachments }),
   ]);
