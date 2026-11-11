@@ -38,7 +38,12 @@ export async function sendMail({ to, replyTo, subject, html, text, attachments =
           content: Buffer.from(a.content).toString('base64'),
         })),
       },
-      headers: { 'X-TM-TAGS': ['rdv'] },
+      headers: {
+        'X-TM-TAGS': ['rdv'],
+        // Pas de suivi : les liens « modifier/annuler » contiennent un jeton privé et ne doivent pas
+        // être réécrits vers le domaine de tracking (lien.marineambroselli.com, sans certificat HTTPS).
+        'X-TM-TRACKING': { html: { open: 0, click: 0 }, text: { click: 0 } },
+      },
     }),
   });
   const body = await res.text();
