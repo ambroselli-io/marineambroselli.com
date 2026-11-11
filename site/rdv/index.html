@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Jost:wght@300;400;500&display=swap">
 <link rel="stylesheet" href="/style.css?v=2">
-<link rel="stylesheet" href="/rdv/rdv.css?v=1">
+<link rel="stylesheet" href="/rdv/rdv.css?v=2">
 </head>
 <body>
 <main class="page">
@@ -40,16 +40,21 @@
   }
   function back(label, fn) { return el('button', { type: 'button', class: 'back', onclick: fn, text: '← ' + label }); }
   function meta(type) {
-    return el('div', { class: 'meta' }, [el('span', { text: type.duration + ' min' }), el('span', { text: 'En visio' })]);
+    return el('ul', { class: 'meta' }, [el('li', { text: type.duration + ' min' }), el('li', { text: 'En visio' })]);
   }
 
   function chooseType() {
     state.type = null;
     show([
+      el('p', { class: 'intro', text: 'Choisissez le rendez-vous qui vous correspond.' }),
       el('div', { class: 'types' }, state.types.map(function (t) {
-        return el('button', { type: 'button', class: 'link type', onclick: function () { pickTime(t); } }, [
-          el('span', { class: 'link__text' }, [el('span', { class: 'link__title', text: t.title }), el('span', { text: t.subtitle || t.duration + ' min' })]),
-          el('span', { 'aria-hidden': 'true', text: '→' }),
+        return el('button', { type: 'button', class: 'type', onclick: function () { pickTime(t); } }, [
+          el('span', { class: 'type__head' }, [
+            el('span', { class: 'type__title', text: t.title }),
+            el('span', { class: 'type__duration', text: t.duration + ' min' }),
+          ]),
+          t.summary ? el('span', { class: 'type__summary', text: t.summary }) : null,
+          el('span', { class: 'type__more' }, [el('span', { text: 'En savoir plus et réserver' }), el('span', { 'aria-hidden': 'true', text: ' →' })]),
         ]);
       })),
     ]);

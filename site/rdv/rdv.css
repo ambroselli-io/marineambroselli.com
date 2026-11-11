@@ -3,11 +3,32 @@
 .head { display: flex; flex-direction: column; gap: 10px; text-align: center; align-items: center; }
 .head h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; color: var(--text-strong); }
 .head p { margin: 0; }
-.meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.meta li { padding: 6px 12px; background: var(--soft); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
 
+/* Choix du type de rdv */
+.intro { margin: 0; font-size: 16px; text-align: center; }
 .types { display: flex; flex-direction: column; gap: 12px; }
-.type { text-align: left; font: inherit; color: inherit; background: none; cursor: pointer; }
-.type .link__text span:last-child { text-transform: none; }
+.type {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 1.5px solid var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.type:hover { background: var(--soft); }
+.type:hover .type__more { border-color: var(--text-strong); }
+.type__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.type__title { font-weight: 500; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-strong); }
+.type__duration { flex-shrink: 0; padding: 3px 10px; background: var(--accent); color: var(--on-accent); font-size: 13px; letter-spacing: 0.06em; }
+.type__summary { font-size: 15px; line-height: 1.55; }
+.type__more { align-self: flex-start; margin-top: 2px; padding-bottom: 2px; border-bottom: 1.5px solid var(--accent); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-strong); }
 
 .desc { display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.6; }
 .desc p { margin: 0; }
@@ -57,5 +78,8 @@
 
 @media (max-width: 480px) {
   .head h1 { font-size: 26px; }
+  .type { padding: 16px; }
+  .type__title { font-size: 14px; letter-spacing: 0.06em; }
+  .type__summary { font-size: 14px; }
   .cal__day { font-size: 14px; }
 }

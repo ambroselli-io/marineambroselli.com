@@ -30,7 +30,7 @@ export async function getSlots(eventType, fromDate, toDate, { excludeId = null, 
       for (
         let s = day.set({ hour: fh, minute: fm });
         s.plus({ minutes: eventType.duration }) <= winEnd;
-        s = s.plus({ minutes: eventType.duration })
+        s = s.plus({ minutes: eventType.step || eventType.duration })
       ) {
         if (s < earliest || s > latest) continue;
         candidates.push(s.toUTC());

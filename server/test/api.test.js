@@ -54,7 +54,7 @@ test('santé et types de rdv', async () => {
   assert.equal(h.body.ok, true);
   const t = await api('GET', '/api/event-types');
   assert.equal(t.body.hostTimeZone, 'Europe/Athens');
-  assert.deepEqual(t.body.eventTypes.map((e) => e.slug), [CONSULT, '30min']);
+  assert.deepEqual(t.body.eventTypes.map((e) => e.slug), [CONSULT, '30min', 'appel-decouverte']);
 });
 
 test('réservation : rdv créé, mails cliente + Marine, notif, agenda, créneau pris', async () => {

@@ -67,11 +67,13 @@ export const config = {
       slug: 'consultation-de-naturopathie',
       title: 'Consultation de naturopathie',
       subtitle: "Bilan de Vitalité et Programme d'Hygiène Vitale (90 min)",
+      // Phrase courte sur la page de choix du rdv
+      summary: "Un bilan complet de votre vitalité et un programme d'hygiène vitale fait pour vous : alimentation, stress, mouvement et sommeil.",
       duration: 90,
       description: [
         "Ensemble, nous construisons un programme d'hygiène vitale autour de quatre piliers : l'alimentation, la gestion du stress, le mouvement et le sommeil.",
         'Consultation unique : 80 €',
-        'Accompagnement sur 5 mois : 3 consultations + suivi WhatsApp, à 65 € la consultation (195 € au total).',
+        'Accompagnement sur 3 mois : 3 consultations + suivi WhatsApp, à 65 € la consultation (195 € au total).',
         'Si vous le souhaitez, vous pouvez m\'indiquer en amont le ou les motifs de votre réservation. Pour toute question, je suis joignable au XX XX XX XX XX (appel ou WhatsApp).',
       ],
       options: {
@@ -79,16 +81,34 @@ export const config = {
         label: 'Formule',
         choices: [
           'Consultation unique (80 €)',
-          'Accompagnement sur 5 mois (3 consultations + suivi WhatsApp, 195 €)',
+          'Accompagnement sur 3 mois (3 consultations + suivi WhatsApp, 195 €)',
         ],
       },
     },
     {
+      // Le slug reste « 30min » pour ne pas casser les liens et les rdv déjà pris.
       slug: '30min',
-      title: 'Rendez-vous de 30 min',
-      subtitle: 'Échange en visio (30 min)',
+      title: 'Séance de coaching',
+      subtitle: "Plan d'action + soutien WhatsApp (30 min)",
+      summary: 'Pour ancrer un changement dans la durée : on fixe vos prochaines étapes, et je vous soutiens entre les séances.',
       duration: 30,
-      description: ['Un échange de 30 minutes en visio avec Marine Ambroselli.'],
+      description: [
+        'Changer ses habitudes, c\'est facile pendant quelques jours, plus difficile sur la durée. Cette séance est là pour vous aider à tenir le cap.',
+        "En 30 minutes, nous faisons le point sur où vous en êtes, ce qui marche et ce qui coince, puis nous construisons ensemble un plan d'action concret pour les semaines à venir.",
+        "Entre les séances, je reste disponible sur WhatsApp pour vous encourager, répondre à vos questions et ajuster le plan si besoin.",
+      ],
+    },
+    {
+      slug: 'appel-decouverte',
+      title: 'Appel découverte',
+      subtitle: 'Premier échange sans engagement (15 min)',
+      summary: 'Vous hésitez ? 15 minutes pour faire connaissance et voir ensemble si je peux vous aider.',
+      duration: 15,
+      step: 30, // créneaux à l'heure et à la demie
+      description: [
+        "Un premier échange de 15 minutes pour faire connaissance : vous me parlez de votre situation et de ce que vous recherchez.",
+        "À la fin de l'appel, nous saurons si mon accompagnement peut vous aider ou non, et quelle formule vous conviendrait le mieux. Sans engagement.",
+      ],
     },
   ],
 };

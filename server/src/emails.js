@@ -37,22 +37,40 @@ export function calendarDescription(b, type) {
     .join('\n');
 }
 
-function layout(title, bodyHtml) {
-  return `<!doctype html><html lang="fr"><body style="margin:0;background:#FFFDF8;font-family:Helvetica,Arial,sans-serif;color:#534b41">
-<div style="max-width:560px;margin:0 auto;padding:24px 16px">
+// Mise en page commune des mails, aux couleurs du site. « light only » empêche Apple Mail / Gmail
+// d'inverser les couleurs en mode sombre (sinon fond gris foncé et boutons marron).
+export function layout(title, bodyHtml, { photo = false, header = '' } = {}) {
+  const serif = "'Gilda Display',Georgia,'Times New Roman',serif";
+  const sans = "Jost,'Helvetica Neue',Helvetica,Arial,sans-serif";
+  return `<!doctype html><html lang="fr" style="color-scheme:light only"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">
+<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>:root{color-scheme:light only;supported-color-schemes:light only}</style>
+</head><body style="margin:0;padding:0;background:#FFFDF8;font-family:${sans};color:#534b41">
+<div style="max-width:560px;margin:0 auto;padding:24px 16px;background:#FFFDF8">
 <div style="border:3px solid #fedf9e;padding:28px 24px;background:#FFFDF8">
-<h1 style="margin:0 0 20px;font-family:Georgia,serif;font-weight:400;font-size:24px;color:#2f2a24">${h(title)}</h1>
-${bodyHtml}
+${header}${
+    photo
+      ? `<div style="text-align:center;margin:0 0 18px"><img src="${config.siteUrl}/assets/marine.jpg" alt="Marine Ambroselli" width="72" height="72" style="width:72px;height:72px;border-radius:50%;border:3px solid #fedf9e;display:inline-block"></div>`
+      : ''
+  }
+<h1 style="margin:0 0 20px;font-family:${serif};font-weight:400;font-size:26px;line-height:1.2;color:#2f2a24${photo ? ';text-align:center' : ''}">${h(title)}</h1>
+<div style="font-family:${sans}">${bodyHtml}</div>${
+    photo
+      ? `<p style="margin:24px 0 0;padding-top:18px;border-top:1.5px solid #fedf9e;font-size:15px;line-height:1.5;color:#534b41">À très vite,<br><span style="font-family:${serif};font-size:18px;color:#2f2a24">Marine Ambroselli</span><br><span style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6257">Ingénieure &amp; naturopathe</span></p>`
+      : ''
+  }
 </div>
-<p style="text-align:center;font-size:12px;color:#6b6257;margin-top:16px">marineambroselli.com</p>
+<p style="text-align:center;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;margin-top:16px"><a href="${config.siteUrl}" style="color:#6b6257;text-decoration:none">marineambroselli.com</a></p>
 </div></body></html>`;
 }
 
 const row = (label, value) =>
   value ? `<tr><td style="padding:6px 12px 6px 0;color:#6b6257;vertical-align:top;white-space:nowrap">${h(label)}</td><td style="padding:6px 0;color:#2f2a24">${value}</td></tr>` : '';
 const button = (href, label, dark = false) =>
-  `<a href="${h(href)}" style="display:inline-block;margin:6px 8px 6px 0;padding:12px 20px;text-decoration:none;font-size:15px;${
-    dark ? 'background:#2f2a24;color:#FFFDF8' : 'background:#fedf9e;color:#3f3830'
+  `<a href="${h(href)}" style="display:inline-block;margin:6px 8px 6px 0;padding:12px 20px;text-decoration:none;font-size:13px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;${
+    dark ? 'background:#534b41;color:#FFFDF8' : 'background:#fedf9e;color:#3f3830'
   }">${h(label)}</a>`;
 
 function details(b, type, zone, forHost) {
@@ -124,7 +142,8 @@ ${
     : `<p>${button(b.video_url, 'Rejoindre la visio', true)}${button(manageUrl(b, 'attendee'), 'Modifier ou annuler')}</p>
 <p style="font-size:14px;line-height:1.6">Pour l'ajouter à votre agenda, ouvrez le fichier joint <b>rendez-vous.ics</b>, ou <a href="${h(gcal)}" style="color:#2f2a24">ajoutez-le à Google Agenda</a>.</p>`
 }
-<p style="font-size:14px;line-height:1.6;color:#6b6257">Une question ? Répondez simplement à ce mail, ou contactez-moi au ${phoneLink(host.phone)} (appel ou ${whatsappLink(host.phone)}).</p>`
+<p style="font-size:14px;line-height:1.6;color:#6b6257">Une question ? Répondez simplement à ce mail, ou contactez-moi au ${phoneLink(host.phone)} (appel ou ${whatsappLink(host.phone)}).</p>`,
+    { photo: true }
   );
   const attendeeText = textVersion([
     `Bonjour ${b.name},`,

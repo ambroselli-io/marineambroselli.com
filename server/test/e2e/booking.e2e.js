@@ -61,7 +61,7 @@ test('une cliente réserve, déplace puis annule son rdv depuis le site', async 
   await page.getByLabel('Votre nom *').fill('Camille E2E');
   await page.getByLabel('Votre adresse email *').fill('camille@example.com');
   await page.getByLabel('Téléphone (facultatif)').fill('06 11 22 33 44');
-  await page.getByLabel(/Accompagnement sur 5 mois/).check();
+  await page.getByLabel(/Accompagnement sur 3 mois/).check();
   await page.getByLabel(/Motif du rendez-vous/).fill('Digestion');
   await page.getByRole('button', { name: 'Confirmer le rendez-vous' }).click();
   await page.getByText('Rendez-vous confirmé').waitFor();
@@ -73,7 +73,7 @@ test('une cliente réserve, déplace puis annule son rdv depuis le site', async 
   const id = new URL(await page.getByRole('link', { name: 'Modifier ou annuler' }).getAttribute('href'), srv.base).searchParams.get('id');
   const b = getBooking(id);
   assert.equal(b.name, 'Camille E2E');
-  assert.equal(b.option, 'Accompagnement sur 5 mois (3 consultations + suivi WhatsApp, 195 €)');
+  assert.equal(b.option, 'Accompagnement sur 3 mois (3 consultations + suivi WhatsApp, 195 €)');
   assert.equal(b.notes, 'Digestion');
   assert.equal(b.time_zone, 'Europe/Paris');
   assert.ok(fakeCal.events.has(b.calendar_ref), "ajouté à l'agenda de Marine");
