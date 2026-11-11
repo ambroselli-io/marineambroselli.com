@@ -17,7 +17,8 @@ const pageErrors = [];
 
 before(async () => {
   srv = await startServer();
-  browser = await chromium.launch();
+  // En CI : PW_CHANNEL=chrome utilise le Chrome déjà installé sur le runner GitHub (rien à télécharger).
+  browser = await chromium.launch(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {});
   page = await browser.newPage({ locale: 'fr-FR', timezoneId: 'Europe/Paris' });
   page.on('pageerror', (e) => pageErrors.push(e.message));
   page.setDefaultTimeout(10000);
