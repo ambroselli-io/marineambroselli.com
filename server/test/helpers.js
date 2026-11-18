@@ -10,6 +10,7 @@ Object.assign(process.env, {
   CALENDAR_PROVIDER: 'none',
   HOST_TIMEZONE: 'Europe/Athens',
   HOST_EMAIL: 'marine@example.com',
+  HOST_PHONE: '06 00 00 00 00',
   TIPIMAIL_API_USER: 'test-user',
   TIPIMAIL_API_KEY: 'test-key',
   EXPO_PUSH_TOKENS: 'ExponentPushToken[test]',

@@ -2,6 +2,8 @@ import { rdvHome } from './env.js';
 import path from 'node:path';
 
 const env = process.env;
+// Téléphone de Marine : dans server/.env (HOST_PHONE), jamais en clair dans le dépôt public.
+const hostPhone = env.HOST_PHONE || '';
 
 export const config = {
   port: Number(env.PORT || 3210),
@@ -11,7 +13,7 @@ export const config = {
   host: {
     name: env.HOST_NAME || 'Marine Ambroselli',
     email: env.HOST_EMAIL || '', // obligatoire en prod (server/.env), pas d'adresse perso dans le code
-    phone: env.HOST_PHONE || 'XX XX XX XX XX',
+    phone: hostPhone,
     // Marine habite en Grèce : ses heures de travail ci-dessous sont en heure d'Athènes.
     // Les clientes, elles, voient les horaires en heure de Paris par défaut.
     timeZone: env.HOST_TIMEZONE || 'Europe/Athens',
@@ -75,7 +77,8 @@ export const config = {
         "Ensemble, nous construisons un programme d'hygiène vitale autour de quatre piliers : l'alimentation, la gestion du stress, le mouvement et le sommeil.",
         'Consultation unique : 80 €',
         'Accompagnement sur 3 mois : 3 consultations + suivi WhatsApp, à 65 € la consultation (195 € au total).',
-        'Si vous le souhaitez, vous pouvez m\'indiquer en amont le ou les motifs de votre réservation. Pour toute question, je suis joignable au XX XX XX XX XX (appel ou WhatsApp).',
+        'Si vous le souhaitez, vous pouvez m\'indiquer en amont le ou les motifs de votre réservation.' +
+          (hostPhone ? ` Pour toute question, je suis joignable au ${hostPhone} (appel ou WhatsApp).` : ''),
       ],
       options: {
         name: 'formule',

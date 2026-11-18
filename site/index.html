@@ -61,8 +61,8 @@
 <div class="socials">
 <a class="social" href="https://instagram.com/marine_naturopathe"><span class="social__ring"><span class="social__dot"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6"/></svg></span></span><span class="social__label">Instagram</span></a>
 <a class="social" href="[LIEN LINKEDIN]"><span class="social__ring"><span class="social__dot"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></span></span><span class="social__label">LinkedIn</span></a>
-<a class="social" href="mailto:marine@example.com"><span class="social__ring"><span class="social__dot"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg></span></span><span class="social__label">Email</span></a>
-<a class="social" href="https://wa.me/33XXXXXXXXX"><span class="social__ring"><span class="social__dot"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.7-4.6A9 9 0 1 1 8 19.6L3 21z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2L9 9.5z"/></svg></span></span><span class="social__label">WhatsApp</span></a>
+<a class="social" href="#contact" data-mail="bWFyaW5lLmFtYnJvc2VsbGlAaWNsb3VkLmNvbQ=="><span class="social__ring"><span class="social__dot"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg></span></span><span class="social__label">Email</span></a>
+<a class="social" href="#contact" data-wa="MzM3ODU3ODE5NTA="><span class="social__ring"><span class="social__dot"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.7-4.6A9 9 0 1 1 8 19.6L3 21z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2L9 9.5z"/></svg></span></span><span class="social__label">WhatsApp</span></a>
 </div>
 
 <section id="niki" class="section">
@@ -100,9 +100,9 @@
 <h2>Ateliers &amp; conférences</h2>
 <p>J'interviens auprès des entreprises, associations, écoles et événements sur la santé hormonale, le SMOP (ex-SOPK) et la prévention santé. Écrivez-moi pour en parler.</p>
 <div class="btn-row">
-<a class="btn btn--outline" href="mailto:marine@example.com?subject=Atelier%20ou%20conf%C3%A9rence">M'écrire</a>
-<a class="btn btn--outline" href="https://wa.me/33XXXXXXXXX">WhatsApp</a>
-<a class="btn btn--outline" href="tel:+33XXXXXXXXX">Appeler</a>
+<a class="btn btn--outline" href="#contact" data-mail="bWFyaW5lLmFtYnJvc2VsbGlAaWNsb3VkLmNvbQ==" data-subject="Atelier ou conférence">M'écrire</a>
+<a class="btn btn--outline" href="#contact" data-wa="MzM3ODU3ODE5NTA=">WhatsApp</a>
+<a class="btn btn--outline" href="#contact" data-tel="MzM3ODU3ODE5NTA=">Appeler</a>
 </div>
 </section>
 
@@ -110,6 +110,14 @@
 </div>
 </main>
 <script>
+// Coordonnées encodées en base64 dans le HTML (et dans le dépôt public) pour que les bots qui moissonnent
+// emails et numéros ne les trouvent pas ; les liens sont reconstruits au chargement.
+document.querySelectorAll('[data-mail]').forEach(function (a) {
+  var s = a.getAttribute('data-subject');
+  a.href = 'mailto:' + atob(a.getAttribute('data-mail')) + (s ? '?subject=' + encodeURIComponent(s) : '');
+});
+document.querySelectorAll('[data-wa]').forEach(function (a) { a.href = 'https://wa.me/' + atob(a.getAttribute('data-wa')); });
+document.querySelectorAll('[data-tel]').forEach(function (a) { a.href = 'tel:+' + atob(a.getAttribute('data-tel')); });
 document.querySelectorAll('[data-jusquau]').forEach(function (el) {
   if (new Date() >= new Date(el.getAttribute('data-jusquau') + 'T00:00:00')) el.remove();
 });
