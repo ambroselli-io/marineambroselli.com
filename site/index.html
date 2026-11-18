@@ -44,6 +44,10 @@
 <span class="link__text"><span class="link__title">Télécharger l'appli Niki Coach</span><span>Votre coaching SMOP (ex-SOPK) au quotidien</span></span>
 <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 </a>
+<a class="link" href="https://formationcompetences.isupnat-naturopathie.fr/produit/conference-sopk/" target="_blank" rel="noopener" data-jusquau="2026-12-10">
+<span class="link__text"><span class="link__title">Conférence SMOP (SOPK) · 9 décembre</span><span>Réservez votre place en ligne</span></span>
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</a>
 <a class="link" href="/rdv/">
 <span class="link__text"><span class="link__title">Prendre rendez-vous</span><span>Consultation individuelle · réservation en ligne</span></span>
 <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -106,6 +110,9 @@
 </div>
 </main>
 <script>
+document.querySelectorAll('[data-jusquau]').forEach(function (el) {
+  if (new Date() >= new Date(el.getAttribute('data-jusquau') + 'T00:00:00')) el.remove();
+});
 fetch('/api/health').then(function (r) { return r.json(); }).then(function (v) {
   console.info('[marineambroselli.com] commit ' + v.commit + ' du ' + v.commitDate + ' · API démarrée le ' + v.startedAt);
 }).catch(function () {});
