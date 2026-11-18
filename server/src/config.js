@@ -10,7 +10,7 @@ export const config = {
 
   host: {
     name: env.HOST_NAME || 'Marine Ambroselli',
-    email: env.HOST_EMAIL || 'marine@example.com',
+    email: env.HOST_EMAIL || '', // obligatoire en prod (server/.env), pas d'adresse perso dans le code
     phone: env.HOST_PHONE || 'XX XX XX XX XX',
     // Marine habite en Grèce : ses heures de travail ci-dessous sont en heure d'Athènes.
     // Les clientes, elles, voient les horaires en heure de Paris par défaut.

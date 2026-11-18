@@ -9,6 +9,7 @@ Object.assign(process.env, {
   DATA_DIR: mkdtempSync(path.join(tmpdir(), 'rdv-test-')),
   CALENDAR_PROVIDER: 'none',
   HOST_TIMEZONE: 'Europe/Athens',
+  HOST_EMAIL: 'marine@example.com',
   TIPIMAIL_API_USER: 'test-user',
   TIPIMAIL_API_KEY: 'test-key',
   EXPO_PUSH_TOKENS: 'ExponentPushToken[test]',

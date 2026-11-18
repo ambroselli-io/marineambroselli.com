@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "test": "node --test test/*.test.js",
     "test:e2e": "node --test --test-concurrency=1 test/e2e/*.e2e.js",
     "google-auth": "node scripts/google-auth.js",

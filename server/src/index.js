@@ -7,4 +7,6 @@ const host = process.env.HOST || '0.0.0.0';
 app.listen(config.port, host, () => {
   console.log(`[rdv] API sur http://${host}:${config.port} (agenda : ${config.calendarProvider})`);
   console.log(`[rdv] commit ${version.commit} du ${version.commitDate}, démarrée le ${version.startedAt}`);
+  if (!config.host.email) console.error('[rdv] HOST_EMAIL absent de server/.env : Marine ne recevra pas les mails de rdv');
+  if (!process.env.EXPO_PUSH_TOKENS) console.warn('[rdv] EXPO_PUSH_TOKENS absent de server/.env : pas de notification push');
 });

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Bloque le push si les commits envoyés (ou les fichiers actuels) contiennent un secret ou une donnée perso.
+# Activé par `npm install` dans server/ (ou `git config core.hooksPath .githooks`).
+set -e
+root=$(git rev-parse --show-toplevel)
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$local_sha" in 0000000000000000000000000000000000000000) continue ;; esac
+  "$root/scripts/check-secrets.sh" "$local_sha" --not --remotes
+done
+"$root/scripts/check-secrets.sh"

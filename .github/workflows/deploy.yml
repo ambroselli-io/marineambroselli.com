@@ -12,6 +12,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Bloque le déploiement si un secret ou une donnée perso a été commité (voir scripts/check-secrets.sh).
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for secrets
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            scripts/check-secrets.sh "$BEFORE..$GITHUB_SHA"
+          fi
+          scripts/check-secrets.sh
+
   # Tests du système de rdv : API (node --test, sans réseau) puis parcours complet dans un vrai navigateur.
   # Si un test casse, on ne déploie pas : la version en ligne reste la précédente.
   tests:
@@ -37,7 +53,7 @@ jobs:
           PW_CHANNEL: chrome
 
   deploy:
-    needs: tests
+    needs: [ secrets, tests ]
     runs-on: ubuntu-latest
     steps:
       # Le SSH du VPS n'est ouvert que sur Tailscale
@@ -49,17 +65,20 @@ jobs:
           tags: tag:ci
 
       - name: Deploy to VPS
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
-          username: deployer
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DEPLOY_PATH
           script: |
             set -e
             export PATH="$HOME/.npm-global/bin:$PATH"
             pm2 --version
 
-            cd /var/www/marineambroselli.com
+            cd "$DEPLOY_PATH"
             git fetch origin main
             git reset --hard origin/main
             echo "Déployé : $(git log -1 --format='%h %s (%ci)')"
@@ -82,7 +101,7 @@ jobs:
             fi
 
   notify:
-    needs: [ tests, deploy ]
+    needs: [ secrets, tests, deploy ]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -91,6 +110,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DEPLOY: ${{ needs.deploy.result }}
           TESTS: ${{ needs.tests.result }}
+          SECRETS: ${{ needs.secrets.result }}
           REF: ${{ github.ref_name }}
           SHA: ${{ github.sha }}
           ACTOR: ${{ github.actor }}
@@ -102,6 +122,8 @@ jobs:
           fi
           if [ "$DEPLOY" = "success" ]; then
             icon=":white_check_mark:"; msg="déployé"
+          elif [ "$SECRETS" != "success" ]; then
+            icon=":rotating_light:"; msg="secret ou donnée perso détecté dans le code, pas de déploiement"
           elif [ "$TESTS" != "success" ]; then
             icon=":x:"; msg="tests rouges, pas de déploiement (le site en ligne n'a pas changé)"
           else

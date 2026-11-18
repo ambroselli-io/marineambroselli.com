@@ -1,25 +1,25 @@
 # marineambroselli.com
 
-Monorepo cloné dans `/var/www/marineambroselli.com` sur le VPS. À chaque push sur `main`, `.github/workflows/deploy.yml` se connecte en SSH, fait un `git reset --hard origin/main`, installe les dépendances de `server/` et relance l'API avec pm2.
+Site de Marine Ambroselli (naturopathe) et son API de prise de rendez-vous. À chaque push sur `main`, `.github/workflows/deploy.yml` lance les tests puis déploie sur le serveur.
 
-- `site/` : le site statique, **seul dossier servi par nginx** (`root /var/www/marineambroselli.com/site`)
+- `site/` : le site statique, seul dossier servi publiquement
   - `index.html`, `style.css`, `assets/` : la page d'accueil
   - `rdv/` : pages de réservation (`/rdv/`) et de gestion d'un rdv (`/rdv/gerer.html?id=…&t=…`), HTML/JS vanilla sans build
-- `server/` : API Express + SQLite (`/api/…`, proxifiée par nginx vers pm2). Son `.env` et sa base `data/` restent sur le serveur, ignorés par git.
+- `server/` : API Express + SQLite (`/api/…`). Sa configuration (`server/.env`, voir `server/.env.example`) et sa base `data/` restent sur le serveur, ignorées par git.
 
 ## Prise de rendez-vous
 
-Parcours copié de cal.com/marine.ambroselli : choix du type (consultation 90 min ou rdv 30 min), du jour, de l'heure, puis nom / email / téléphone / formule / motif. À la réservation :
+Choix du type (consultation 90 min ou rdv 30 min), du jour, de l'heure, puis nom / email / téléphone / formule / motif. À la réservation :
 
 1. le rdv est enregistré en base (SQLite, `server/data/rdv.sqlite`), avec un verrou contre les doubles réservations ;
 2. il est ajouté à l'agenda de Marine (`CALENDAR_PROVIDER`) ; ses créneaux déjà occupés dans cet agenda ne sont pas proposés ;
 3. un mail part (Tipimail) à la personne et à Marine, avec le lien visio, un lien pour modifier/annuler et un `.ics` (invitation) en pièce jointe.
 
-Marine reçoit aussi une notification push (création, déplacement, annulation) sur l'appli Niki via l'API Expo si `EXPO_PUSH_TOKENS` est renseigné.
+Marine reçoit aussi une notification push (création, déplacement, annulation) sur l'appli Niki via l'API Expo si `EXPO_PUSH_TOKENS` est renseigné dans `server/.env`.
 
 Chacun a son propre lien de gestion (jeton différent pour Marine et pour la personne). Déplacer ou annuler met à jour l'agenda et renvoie un mail aux deux (avec un `.ics` de mise à jour ou d'annulation).
 
-Visio : salle Jitsi fixe `https://meet.jit.si/marineambroselli` (`VIDEO_URL_TEMPLATE`). Fuseaux : les horaires de Marine sont en heure de Grèce (`HOST_TIMEZONE=Europe/Athens`, lun–ven 9h–17h), les clientes voient l'heure de Paris par défaut (modifiable sur la page), Marine reçoit ses mails en heure de Grèce.
+Visio : lien défini par `VIDEO_URL_TEMPLATE`. Fuseaux : les horaires de Marine sont en heure de Grèce (`HOST_TIMEZONE=Europe/Athens`, lun–ven 9h–17h), les clientes voient l'heure de Paris par défaut (modifiable sur la page), Marine reçoit ses mails en heure de Grèce.
 
 Les types de rdv, horaires d'ouverture, préavis minimum (2 h) et horizon (60 jours) sont dans `server/src/config.js` (surchargeables par variables d'environnement).
 
@@ -29,29 +29,9 @@ Les types de rdv, horaires d'ouverture, préavis minimum (2 h) et horizon (60 jo
 - `caldav` : Calendrier Apple / iCloud (ou tout serveur CalDAV). Identifiant Apple + **mot de passe pour app** (appleid.apple.com → Connexion et sécurité → Mots de passe pour app). 
 - `none` : rien n'est synchronisé, Marine reçoit le `.ics` dans son mail.
 
-### Mise en place sur le serveur (une fois)
+### Mise en place sur le serveur
 
-```sh
-cd /var/www/marineambroselli.com/server
-cp .env.example .env && chmod 600 .env   # puis remplir les clés
-npm ci --omit=dev
-pm2 start ecosystem.config.cjs && pm2 save
-```
-
-Node ≥ 20 et pm2 doivent être installés. Dans le `server {}` nginx de marineambroselli.com, **en même temps que le merge** (le site a déménagé dans `site/`) :
-
-```nginx
-root /var/www/marineambroselli.com/site;
-
-location /api/ {
-    proxy_pass http://127.0.0.1:3210;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-Comme nginx ne sert que `site/`, ni `server/.env`, ni `server/data/`, ni `.git` ne sont accessibles. Le `git reset --hard` du déploiement ne touche pas aux fichiers ignorés. Penser à sauvegarder `server/data/rdv.sqlite`.
+Copier `server/.env.example` en `server/.env` (droits 600) et le remplir, puis lancer `server/` avec pm2 (`ecosystem.config.cjs`). Seul `site/` doit être servi par le serveur web, l'API est derrière un reverse proxy sur `/api/`. Penser à sauvegarder la base SQLite.
 
 ### En local
 
@@ -80,3 +60,15 @@ Rien ne part sur le réseau : Tipimail, Expo et l'agenda sont simulés (`server/
 ## À compléter
 
 Chercher les `[...]` dans `site/index.html` : LinkedIn, et deux phrases dans « À propos ».
+
+## Avant de pousser : pas de secret ni de donnée perso
+
+Le dépôt est public. Rien de secret ou de personnel ne doit être commité : tokens (Expo, API, OAuth), clés SSH, webhooks, mots de passe, adresses email ou numéros personnels, IP du serveur, `.env`, base SQLite. Tout ça va dans `server/.env` sur le serveur ou dans les secrets GitHub.
+
+`scripts/check-secrets.sh` le vérifie :
+
+- automatiquement avant chaque `git push` (hook `.githooks/pre-push`, activé par `npm install` dans `server/`, ou à la main : `git config core.hooksPath .githooks`) ;
+- automatiquement avant chaque `git push` lancé par Claude Code (`.claude/settings.json`) ;
+- sur GitHub, avant chaque déploiement (job `secrets` du workflow).
+
+Les coordonnées publiques de Marine affichées sur le site sont autorisées dans `scripts/secrets-allowlist.txt`. Faux positif : l'ajouter dans ce fichier.
